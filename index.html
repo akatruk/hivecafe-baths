@@ -37,7 +37,13 @@
                 selectable: true,
                 events: [],
                 dateClick: function(info) {
-                    document.getElementById('time').value = info.dateStr + "T" + new Date().toLocaleTimeString('en-GB', {hour: '2-digit', minute: '2-digit'});
+                    // Set the appointment time based on the clicked date
+                    const clickedDate = info.date;
+                    document.getElementById('time').value = clickedDate.toISOString().slice(0, 16);
+                },
+                eventClick: function(info) {
+                    // Display appointment details when clicking on an event
+                    alert(`Appointment: ${info.event.title}\nTime: ${info.event.start.toISOString()}`);
                 }
             });
             calendar.render();
@@ -47,6 +53,13 @@
                 const name = document.getElementById('name').value;
                 const phone = document.getElementById('phone').value;
                 const time = document.getElementById('time').value;
+
+                // Add the event to the calendar
+                calendar.addEvent({
+                    title: `${name} - ${phone}`,
+                    start: time,
+                    allDay: false // It's an hourly appointment
+                });
 
                 fetch('/schedule', {
                     method: 'POST',
