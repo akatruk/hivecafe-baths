@@ -78,7 +78,7 @@ function scheduleAppointment(date, time) {
 
 function notify(name, telephone) {
     const message = `Bath must be ready in 10 min for ${name}, ${telephone}`;
-    const chatId = '<YOUR_CHAT_ID>'; // Replace with your chat ID
+    const chatId = '209164634'; // Replace with your chat ID
 
     // Send message to Telegram
     $.post(`https://api.telegram.org/bot${token}/sendMessage`, {
