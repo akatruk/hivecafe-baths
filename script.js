@@ -1,102 +1,97 @@
-document.addEventListener('DOMContentLoaded', () => {
-    const weekContainer = document.getElementById('week');
-    const eventModal = document.getElementById('eventModal');
-    const closeModal = document.getElementById('closeModal');
-    const eventForm = document.getElementById('eventForm');
-    const eventNameInput = document.getElementById('eventName');
-    const eventDescriptionInput = document.getElementById('eventDescription');
-    const eventDateInput = document.getElementById('eventDate');
+const token = '7835097683:AAE8W5EDRzbzRuCOYxwUwJlFePjF31uGFAc'; // Store the Telegram bot token here
+const appointments = []; // Array to store scheduled appointments
 
-    // Helper function to format date to 'Day, MM/DD'
-    function formatDate(date) {
-        const options = { weekday: 'short', month: 'numeric', day: 'numeric' };
-        return date.toLocaleDateString('en-US', options);
-    }
+function createCalendar() {
+    const currentDate = new Date();
+    const weekStart = currentDate.getDate() - currentDate.getDay(); // Start of the week
+    const weekEnd = weekStart + 6; // End of the week
 
-    // Generate the week starting from the current date
-    function generateWeek() {
-        const today = new Date();
-        const startOfWeek = new Date(today);
-        startOfWeek.setDate(today.getDate() - today.getDay()); // Set to the start of the week (Sunday)
-
-        // Clear the previous week if it exists
-        weekContainer.innerHTML = '';
-
-        // Loop to create 7 days
-        for (let i = 0; i < 7; i++) {
-            const day = new Date(startOfWeek);
-            day.setDate(startOfWeek.getDate() + i);
-
-            // Create a day element
-            const dayElement = document.createElement('div');
-            dayElement.classList.add('day');
-            dayElement.dataset.date = day.toDateString(); // Store date in data attribute
-            if (day.toDateString() === today.toDateString()) {
-                dayElement.classList.add('current'); // Highlight the current day
-            }
-            dayElement.innerHTML = `<div>${formatDate(day)}</div>`;
+    for (let i = weekStart; i <= weekEnd; i++) {
+        const date = new Date(currentDate.setDate(i));
+        const dayDiv = $('<div></div>').addClass('day').text(date.toDateString());
+        
+        // Append time slots to the day
+        for (let hour = 8; hour <= 17; hour++) { // Assuming appointments from 8 AM to 5 PM
+            const time = `${hour}:00`;
+            const isBooked = appointments.some(app => 
+                app.date.toDateString() === date.toDateString() && app.time === time
+            );
             
-            // Load events from localStorage
-            loadEvents(dayElement);
-
-            // Add click event to open modal
-            dayElement.addEventListener('click', () => openModal(day));
-
-            // Append the day element to the week container
-            weekContainer.appendChild(dayElement);
+            const timeSlot = $('<div></div>').text(time).data('time', time);
+            
+            // Check if the appointment is in the past
+            const appointmentDateTime = new Date(date);
+            const [appointmentHour] = time.split(':');
+            appointmentDateTime.setHours(appointmentHour);
+            const isPast = appointmentDateTime < new Date(); // Check if the appointment time has already passed
+            
+            // If the time is booked and in the past, change the appearance
+            if (isBooked && isPast) {
+                timeSlot.addClass('booked').text(`${time} (Booked)`).css('text-decoration', 'line-through');
+            } else if (isBooked) {
+                timeSlot.addClass('booked').text(`${time} (Booked)`);
+                timeSlot.click(() => openAppointmentModal(date, time)); // Allow clicking for future appointments
+            } else {
+                timeSlot.click(() => openAppointmentModal(date, time));
+            }
+            
+            dayDiv.append(timeSlot);
         }
+
+        $('#calendar').append(dayDiv);
+    }
+}
+
+function openAppointmentModal(date, time) {
+    $('#appointment-modal').show();
+    $('#appointment-time').empty().append(`<option>${time}</option>`);
+    
+    $('#schedule-appointment').off().click(() => scheduleAppointment(date, time));
+}
+
+function scheduleAppointment(date, time) {
+    const name = $('#name').val();
+    const telephone = $('#telephone').val();
+
+    if (!name || !telephone) {
+        alert("Please fill in all fields.");
+        return;
     }
 
-    // Load events for a specific day
-    function loadEvents(dayElement) {
-        const date = dayElement.dataset.date;
-        const events = JSON.parse(localStorage.getItem(date)) || [];
-        events.forEach(event => {
-            const eventDiv = document.createElement('div');
-            eventDiv.classList.add('event');
-            eventDiv.textContent = event.name;
-            dayElement.appendChild(eventDiv);
-        });
-    }
+    appointments.push({ name, telephone, date: new Date(date), time }); // Store a new appointment
+    alert(`Appointment scheduled for ${name} at ${time} on ${date.toDateString()}`);
+    
+    // Set a notification for 10 minutes before the appointment
+    const appointmentDateTime = new Date(date);
+    const [hour, minute] = time.split(':');
+    appointmentDateTime.setHours(hour, minute);
+    
+    const notificationTime = appointmentDateTime.getTime() - (10 * 60 * 1000); // 10 minutes before
+    setTimeout(() => notify(name, telephone), notificationTime - Date.now());
 
-    // Open modal to add an event
-    function openModal(date) {
-        eventModal.style.display = 'block';
-        eventDateInput.value = date.toDateString();
-    }
+    $('#appointment-modal').hide();
+    $('#name').val('');
+    $('#telephone').val('');
+    $('#calendar').empty(); // Clear the calendar
+    createCalendar(); // Recreate calendar to reflect new appointments
+}
 
-    // Close the modal
-    closeModal.onclick = () => {
-        eventModal.style.display = 'none';
-    }
+function notify(name, telephone) {
+    const message = `Bath must be ready in 10 min for ${name}, ${telephone}`;
+    const chatId = '<YOUR_CHAT_ID>'; // Replace with your chat ID
 
-    // Close the modal if clicked outside
-    window.onclick = (event) => {
-        if (event.target == eventModal) {
-            eventModal.style.display = 'none';
-        }
-    }
-
-    // Handle form submission
-    eventForm.addEventListener('submit', (event) => {
-        event.preventDefault();
-        const eventName = eventNameInput.value;
-        const eventDescription = eventDescriptionInput.value;
-        const eventDate = eventDateInput.value;
-
-        // Save event to localStorage
-        const events = JSON.parse(localStorage.getItem(eventDate)) || [];
-        events.push({ name: eventName, description: eventDescription });
-        localStorage.setItem(eventDate, JSON.stringify(events));
-
-        // Refresh the week view
-        generateWeek();
-
-        // Reset form and close modal
-        eventForm.reset();
-        eventModal.style.display = 'none';
+    // Send message to Telegram
+    $.post(`https://api.telegram.org/bot${token}/sendMessage`, {
+        chat_id: chatId,
+        text: message
+    }).done(() => {
+        alert(`Notification sent to Telegram: ${message}`);
+    }).fail(() => {
+        alert('Failed to send notification to Telegram.');
     });
+}
 
-    // Generate the week when the page loads
-    generateWeek();
+// Initialize the calendar
+$(document).ready(() => {
+    createCalendar();
 });
