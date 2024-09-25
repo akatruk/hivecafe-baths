@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Appointment Scheduler</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+        input, button {
+            padding: 10px;
+            margin: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Appointment Scheduler</h1>
+    <form id="appointment-form">
+        <input type="text" id="name" placeholder="Your Name" required>
+        <input type="text" id="telephone" placeholder="Telephone Number" required>
+        <input type="time" id="time" required>
+        <button type="submit">Schedule Appointment</button>
+    </form>
+    <div id="response"></div>
+
+    <script>
+        document.getElementById('appointment-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const name = document.getElementById('name').value;
+            const telephone = document.getElementById('telephone').value;
+            const time = document.getElementById('time').value;
+
+            // Get the chatId from your bot (this could be obtained from the user session)
+            const chatId = '209164634'; // Replace with the actual chat ID or get dynamically
+
+            fetch('/schedule', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ chatId, name, telephone, time })
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('response').innerText = data.message;
+                document.getElementById('appointment-form').reset(); // Reset the form
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                document.getElementById('response').innerText = 'Failed to schedule appointment.';
+            });
+        });
+    </script>
+</body>
+</html>
