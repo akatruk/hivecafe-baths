@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bath Scheduler 🛁</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/5.11.3/main.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 20px;
+        }
+        #calendar {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>Schedule a Bath Appointment</h1>
+    <div id='calendar'></div>
+    
+    <form id="appointmentForm">
+        <input type="text" id="name" placeholder="Name" required>
+        <input type="text" id="phone" placeholder="Phone Number" required>
+        <input type="datetime-local" id="time" required>
+        <button type="submit">Schedule</button>
+    </form>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/5.11.3/main.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const calendarEl = document.getElementById('calendar');
+            const calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'timeGridWeek',
+                selectable: true,
+                events: [],
+                dateClick: function(info) {
+                    document.getElementById('time').value = info.dateStr + "T" + new Date().toLocaleTimeString('en-GB', {hour: '2-digit', minute: '2-digit'});
+                }
+            });
+            calendar.render();
+
+            document.getElementById('appointmentForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                const name = document.getElementById('name').value;
+                const phone = document.getElementById('phone').value;
+                const time = document.getElementById('time').value;
+
+                fetch('/schedule', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ name, phone, time })
+                })
+                .then(response => response.text())
+                .then(data => {
+                    alert(data);
+                    document.getElementById('appointmentForm').reset();
+                });
+            });
+        });
+    </script>
+</body>
+</html>
