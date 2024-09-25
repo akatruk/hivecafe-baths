@@ -21,8 +21,8 @@ jobs:
 
     - name: Build the Docker image
       run: |
-        docker build -t errbx/hifecafe:latest1 .
+        docker build -t errbx/hifecafe:latest2 .
       
     - name: Push the Docker image
       run: |
-        docker push errbx/hifecafe:latest1
+        docker push errbx/hifecafe:latest2

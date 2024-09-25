@@ -57,16 +57,14 @@ function notify(name, telephone) {
     alert(`Bath must be ready in 10 min for ${name}, ${telephone}`);
 }
 
-// Initialize the calendar
 $(document).ready(() => {
     createCalendar();
 });
 
 function notify(name, telephone) {
     const message = `Bath must be ready in 10 min for ${name}, ${telephone}`;
-    const chatId = '209164634'; // Replace with your chat ID
-
-    // Send message to Telegram
+    const chatId = '209164634'; 
+ 
     $.post(`https://api.telegram.org/bot${token}/sendMessage`, {
         chat_id: chatId,
         text: message
