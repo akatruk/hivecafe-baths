@@ -1,5 +1,13 @@
-const token = '7835097683:AAE8W5EDRzbzRuCOYxwUwJlFePjF31uGFAc'; // Store the Telegram bot token here
+const token = '7835097683:AAE8W5EDRzbzRuCOYxwUwJlFePjF31uGFAc'; // Telegram bot token
 const appointments = []; // Array to store scheduled appointments
+
+// Function to switch between tabs
+function openTab(evt, tabName) {
+    $('.tabcontent').hide();  // Hide all tab content
+    $('.tablinks').removeClass('active');  // Remove active class from all tablinks
+    $('#' + tabName).show();  // Show the current tab
+    $(evt.currentTarget).addClass('active');  // Add active class to the button that opened the tab
+}
 
 function createCalendar() {
     const currentDate = new Date();
@@ -9,32 +17,36 @@ function createCalendar() {
     for (let i = weekStart; i <= weekEnd; i++) {
         const date = new Date(currentDate.setDate(i));
         const dayDiv = $('<div></div>').addClass('day').text(date.toDateString());
-        
+
         // Append time slots to the day
         for (let hour = 8; hour <= 17; hour++) { // Assuming appointments from 8 AM to 5 PM
             const time = `${hour}:00`;
-            const isBooked = appointments.some(app => 
+            const appointment = appointments.find(app =>
                 app.date.toDateString() === date.toDateString() && app.time === time
             );
-            
+
             const timeSlot = $('<div></div>').text(time).data('time', time);
-            
+
             // Check if the appointment is in the past
             const appointmentDateTime = new Date(date);
             const [appointmentHour] = time.split(':');
             appointmentDateTime.setHours(appointmentHour);
             const isPast = appointmentDateTime < new Date(); // Check if the appointment time has already passed
-            
-            // If the time is booked and in the past, change the appearance
-            if (isBooked && isPast) {
-                timeSlot.addClass('booked').text(`${time} (Booked)`).css('text-decoration', 'line-through');
-            } else if (isBooked) {
-                timeSlot.addClass('booked').text(`${time} (Booked)`);
-                timeSlot.click(() => openAppointmentModal(date, time)); // Allow clicking for future appointments
+
+            if (appointment) {
+                // If there is an appointment, show name and telephone number
+                const displayText = `${time} - ${appointment.name}, ${appointment.telephone}`;
+                if (isPast) {
+                    timeSlot.addClass('booked').text(displayText).css('text-decoration', 'line-through');
+                } else {
+                    timeSlot.addClass('booked').text(displayText);
+                    timeSlot.click(() => openAppointmentModal(date, time)); // Allow clicking for future appointments
+                }
             } else {
+                // If no appointment, allow creating a new one
                 timeSlot.click(() => openAppointmentModal(date, time));
             }
-            
+
             dayDiv.append(timeSlot);
         }
 
@@ -49,17 +61,20 @@ function openAppointmentModal(date, time) {
     $('#schedule-appointment').off().click(() => scheduleAppointment(date, time));
 }
 
-function scheduleAppointment(date, time) {
+function scheduleAppointmentFromScheduleTab() {
+    const date = $('#appointment-date').val();
+    const time = $('#appointment-time').val();
     const name = $('#name').val();
     const telephone = $('#telephone').val();
 
-    if (!name || !telephone) {
+    if (!date || !time || !name || !telephone) {
         alert("Please fill in all fields.");
         return;
     }
 
-    appointments.push({ name, telephone, date: new Date(date), time }); // Store a new appointment
-    alert(`Appointment scheduled for ${name} at ${time} on ${date.toDateString()}`);
+    const appointmentDate = new Date(date);
+    appointments.push({ name, telephone, date: appointmentDate, time }); // Store a new appointment
+    alert(`Appointment scheduled for ${name} at ${time} on ${appointmentDate.toDateString()}`);
     
     // Set a notification for 10 minutes before the appointment
     const appointmentDateTime = new Date(date);
@@ -69,7 +84,6 @@ function scheduleAppointment(date, time) {
     const notificationTime = appointmentDateTime.getTime() - (10 * 60 * 1000); // 10 minutes before
     setTimeout(() => notify(name, telephone), notificationTime - Date.now());
 
-    $('#appointment-modal').hide();
     $('#name').val('');
     $('#telephone').val('');
     $('#calendar').empty(); // Clear the calendar
@@ -77,10 +91,10 @@ function scheduleAppointment(date, time) {
 }
 
 function notify(name, telephone) {
-    const message = `Bath must be ready in 10 min for ${name}, ${telephone}`;
+    const message = `Appointment reminder: Your appointment with ${name}, ${telephone} is in 10 minutes.`;
     const chatId = '209164634'; // Replace with your chat ID
 
-    // Send message to Telegram
+    // Send notification message to Telegram
     $.post(`https://api.telegram.org/bot${token}/sendMessage`, {
         chat_id: chatId,
         text: message
@@ -91,7 +105,13 @@ function notify(name, telephone) {
     });
 }
 
-// Initialize the calendar
+// Initialize the calendar when document is ready
 $(document).ready(() => {
     createCalendar();
+
+    // Open the "Calendar" tab by default
+    $('#calendar-tab').click();
+
+    // Attach event handler to schedule appointment from the Schedule tab
+    $('#schedule-appointment').click(scheduleAppointmentFromScheduleTab);
 });

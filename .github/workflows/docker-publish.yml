@@ -3,7 +3,7 @@ name: Build and Push Docker Image
 on:
   push:
     branches:
-      - main  # Change this to your default branch if necessary
+      - new-style  # Change this to your default branch if necessary
 
 jobs:
   build:
@@ -21,8 +21,8 @@ jobs:
 
     - name: Build the Docker image
       run: |
-        docker build -t errbx/hifecafe:l4 .
+        docker build -t errbx/hifecafe:new-style .
       
     - name: Push the Docker image
       run: |
-        docker push errbx/hifecafe:l4
+        docker push errbx/hifecafe:new-style
