@@ -8,20 +8,46 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
 <body>
-    <div class="container">
-        <h1>Appointment Scheduler</h1>
-        <div id="calendar"></div>
+    <h1>Appointment Scheduler</h1>
 
-        <div id="appointment-modal" class="modal">
-            <div class="modal-content">
-                <h2>Schedule Appointment</h2>
-                <input type="text" id="name" placeholder="Name" required>
-                <input type="text" id="telephone" placeholder="Telephone" required>
-                <select id="appointment-time"></select>
-                <button id="schedule-appointment">Schedule</button>
-                <button id="close-modal">Close</button>
-            </div>
-        </div>
+    <!-- Tab navigation -->
+    <div class="tab">
+        <button class="tablinks" id="calendar-tab" onclick="openTab(event, 'Calendar')">Calendar</button>
+        <button class="tablinks" id="schedule-tab" onclick="openTab(event, 'Schedule')">Schedule</button>
+    </div>
+
+    <!-- Calendar tab content -->
+    <div id="Calendar" class="tabcontent">
+        <div id="calendar"></div>
+    </div>
+
+    <!-- Schedule tab content -->
+    <div id="Schedule" class="tabcontent" style="display:none;">
+        <h2>Schedule an Appointment</h2>
+        <label for="appointment-date">Choose a date:</label>
+        <input type="date" id="appointment-date" required>
+
+        <label for="appointment-time">Choose a time:</label>
+        <select id="appointment-time" required>
+            <option value="8:00">8:00 AM</option>
+            <option value="9:00">9:00 AM</option>
+            <option value="10:00">10:00 AM</option>
+            <option value="11:00">11:00 AM</option>
+            <option value="12:00">12:00 PM</option>
+            <option value="13:00">1:00 PM</option>
+            <option value="14:00">2:00 PM</option>
+            <option value="15:00">3:00 PM</option>
+            <option value="16:00">4:00 PM</option>
+            <option value="17:00">5:00 PM</option>
+            <option value="18:00">6:00 PM</option>
+            <option value="19:00">7:00 PM</option>
+            <option value="20:00">8:00 PM</option>
+            <option value="21:00">9:00 PM</option>
+        </select>
+
+        <input type="text" id="name" placeholder="Name" required>
+        <input type="text" id="telephone" placeholder="Telephone" required>
+        <button id="schedule-appointment">Schedule</button>
     </div>
 
     <script src="script.js"></script>
