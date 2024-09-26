@@ -1,0 +1,68 @@
+services:
+  web:
+    image: errbx/hifecafe:new-style
+    container_name: hifecafe
+    restart: always
+    networks:
+      - app-network
+    expose:
+      - 80
+
+  backend:
+    image: errbx/hifecafe:backend
+    container_name: hifecafe-backend
+    restart: always
+    networks:
+      - app-network
+    expose:
+      - 5000
+    environment:
+      - FLASK_ENV=production
+      - DATABASE_URL=postgres://posgres:posgres@postgres:5432/app  # Link to PostgreSQL ?
+    depends_on:
+      - postgres  # Ensure PostgreSQL is ready before starting backend
+
+  nginx:
+    image: nginx:alpine
+    container_name: nginx
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/conf.d:/etc/nginx/conf.d
+      - ./nginx/certbot/certs:/etc/letsencrypt
+      - ./nginx/certbot/www:/var/www/certbot
+    networks:
+      - app-network
+
+  postgres:
+    image: postgres:latest
+    container_name: postgres
+    restart: always
+    environment:
+      POSTGRES_USER: posgres
+      POSTGRES_PASSWORD: posgres
+      POSTGRES_DB: app
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - app-network
+
+  certbot:
+    image: certbot/certbot:latest
+    container_name: certbot
+    restart: always
+    volumes:
+      - ./nginx/certbot/certs:/etc/letsencrypt
+      - ./nginx/certbot/www:/var/www/certbot
+    networks:
+      - app-network
+    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  postgres-data:

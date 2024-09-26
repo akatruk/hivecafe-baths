@@ -12,14 +12,14 @@ function openTab(evt, tabName) {
 function createCalendar() {
     const currentDate = new Date();
     const weekStart = currentDate.getDate() - currentDate.getDay(); // Start of the week
-    const weekEnd = weekStart + 6; // End of the week
+    const weekEnd = weekStart + 7; // End of the week
 
     for (let i = weekStart; i <= weekEnd; i++) {
         const date = new Date(currentDate.setDate(i));
         const dayDiv = $('<div></div>').addClass('day').text(date.toDateString());
 
         // Append time slots to the day
-        for (let hour = 8; hour <= 17; hour++) { // Assuming appointments from 8 AM to 5 PM
+        for (let hour = 8; hour <= 20; hour++) { // Assuming appointments from 8 AM to 8 PM
             const time = `${hour}:00`;
             const appointment = appointments.find(app =>
                 app.date.toDateString() === date.toDateString() && app.time === time
@@ -86,7 +86,7 @@ function scheduleAppointmentFromScheduleTab() {
 
     $('#name').val('');
     $('#telephone').val('');
-    $('#calendar').empty(); // Clear the calendar
+    $('#calendar').empty(); // Clear the calendar∆
     createCalendar(); // Recreate calendar to reflect new appointments
 }
 

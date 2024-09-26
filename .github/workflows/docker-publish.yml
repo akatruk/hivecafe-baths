@@ -22,7 +22,15 @@ jobs:
     - name: Build the Docker image
       run: |
         docker build -t errbx/hifecafe:new-style .
-      
+  
+    - name: Build the Docker image backend
+      run: |
+        docker build -f Dockerfile.backend -t errbx/hifecafe:backend .
+  
     - name: Push the Docker image
       run: |
         docker push errbx/hifecafe:new-style
+
+    - name: Push the Docker image
+      run: |
+        docker push errbx/hifecafe:backend
