@@ -8,15 +8,20 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
 <body>
-    <h1>Appointment Scheduler</h1>
-    <div id="calendar"></div>
+    <div class="container">
+        <h1>Appointment Scheduler</h1>
+        <div id="calendar"></div>
 
-    <div id="appointment-modal" style="display: none;">
-        <h2>Schedule Appointment</h2>
-        <input type="text" id="name" placeholder="Name" required>
-        <input type="text" id="telephone" placeholder="Telephone" required>
-        <select id="appointment-time"></select>
-        <button id="schedule-appointment">Schedule</button>
+        <div id="appointment-modal" class="modal">
+            <div class="modal-content">
+                <h2>Schedule Appointment</h2>
+                <input type="text" id="name" placeholder="Name" required>
+                <input type="text" id="telephone" placeholder="Telephone" required>
+                <select id="appointment-time"></select>
+                <button id="schedule-appointment">Schedule</button>
+                <button id="close-modal">Close</button>
+            </div>
+        </div>
     </div>
 
     <script src="script.js"></script>
