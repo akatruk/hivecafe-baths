@@ -27,10 +27,6 @@ def create_appointment():
         conn.commit()
 
     return jsonify({'id': appointment_id, 'name': name, 'date': date, 'time': time}), 201
-
-if __name__ == '__main__':
-    app.run(debug=True)
-# Соединение с базой данных PostgreSQL
 def get_db_connection():
     conn = psycopg2.connect(
         host="postgres",
@@ -58,4 +54,4 @@ def get_appointments():
     return jsonify(appointments_list)
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000)
+    app.run(debug=True, host='0.0.0.0', port=5000)
