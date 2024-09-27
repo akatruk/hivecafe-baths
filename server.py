@@ -6,7 +6,7 @@ app = Flask(__name__)
 
 conn = psycopg2.connect(user="posgres",
                                 password="posgres",
-                                host="postgres",
+                                host="localhost",
                                 port="5432",
                                 database="app")
 
@@ -30,3 +30,32 @@ def create_appointment():
 
 if __name__ == '__main__':
     app.run(debug=True)
+
+def get_db_connection():
+    conn = psycopg2.connect(
+        host="localhost",
+        database="app",
+        user="posgres",
+        password="posgres"
+    )
+    return conn
+
+# GET-запрос для получения всех записей на прием
+@app.route('/appointments', methods=['GET'])
+def get_appointments():
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT name, telephone, date, time FROM appointments;")
+    appointments = cursor.fetchall()
+    cursor.close()
+    conn.close()
+
+    # Преобразуем результат в JSON
+    appointments_list = [
+        {"name": app[0], "telephone": app[1], "date": app[2], "time": app[3]} 
+        for app in appointments
+    ]
+    return jsonify(appointments_list)
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=5000)
