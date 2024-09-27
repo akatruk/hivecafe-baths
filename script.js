@@ -9,110 +9,49 @@ function openTab(evt, tabName) {
     $(evt.currentTarget).addClass('active');  // Add active class to the button that opened the tab
 }
 
-// function createCalendar() {
-//     const currentDate = new Date();
-//     const weekStart = currentDate.getDate() - currentDate.getDay(); // Start of the week
-//     const weekEnd = weekStart + 7; // End of the week
-
-//     for (let i = weekStart; i <= weekEnd; i++) {
-//         const date = new Date(currentDate.setDate(i));
-//         const dayDiv = $('<div></div>').addClass('day').text(date.toDateString());
-
-//         // Append time slots to the day
-//         for (let hour = 8; hour <= 20; hour++) { // Assuming appointments from 8 AM to 8 PM
-//             const time = `${hour}:00`;
-//             const appointment = appointments.find(app =>
-//                 app.date.toDateString() === date.toDateString() && app.time === time
-//             );
-
-//             const timeSlot = $('<div></div>').text(time).data('time', time);
-
-//             // Check if the appointment is in the past
-//             const appointmentDateTime = new Date(date);
-//             const [appointmentHour] = time.split(':');
-//             appointmentDateTime.setHours(appointmentHour);
-//             const isPast = appointmentDateTime < new Date(); // Check if the appointment time has already passed
-
-//             if (appointment) {
-//                 // If there is an appointment, show name and telephone number
-//                 const displayText = `${time} - ${appointment.name}, ${appointment.telephone}`;
-//                 if (isPast) {
-//                     timeSlot.addClass('booked').text(displayText).css('text-decoration', 'line-through');
-//                 } else {
-//                     timeSlot.addClass('booked').text(displayText);
-//                     timeSlot.click(() => openAppointmentModal(date, time)); // Allow clicking for future appointments
-//                 }
-//             } else {
-//                 // If no appointment, allow creating a new one
-//                 timeSlot.click(() => openAppointmentModal(date, time));
-//             }
-
-//             dayDiv.append(timeSlot);
-//         }
-
-//         $('#calendar').append(dayDiv);
-//     }
-// }
-
 function createCalendar() {
     const currentDate = new Date();
     const weekStart = currentDate.getDate() - currentDate.getDay(); // Start of the week
     const weekEnd = weekStart + 7; // End of the week
 
-    // Fetch appointments from the server
-    fetch('http://backend:5000/appointments', {
-        method: 'GET',
-        headers: {
-            'Content-Type': 'application/json'
-        }
-    })
-    .then(response => response.json())
-    .then(data => {
-        appointments.length = 0; // Clear the existing array
-        appointments.push(...data); // Populate with new appointments
+    for (let i = weekStart; i <= weekEnd; i++) {
+        const date = new Date(currentDate.setDate(i));
+        const dayDiv = $('<div></div>').addClass('day').text(date.toDateString());
 
-        for (let i = weekStart; i <= weekEnd; i++) {
-            const date = new Date(currentDate.setDate(i));
-            const dayDiv = $('<div></div>').addClass('day').text(date.toDateString());
+        // Append time slots to the day
+        for (let hour = 8; hour <= 20; hour++) { // Assuming appointments from 8 AM to 8 PM
+            const time = `${hour}:00`;
+            const appointment = appointments.find(app =>
+                app.date.toDateString() === date.toDateString() && app.time === time
+            );
 
-            // Append time slots to the day
-            for (let hour = 8; hour <= 20; hour++) { // Assuming appointments from 8 AM to 8 PM
-                const time = `${hour}:00`;
-                const appointment = appointments.find(app =>
-                    new Date(app.date).toDateString() === date.toDateString() && app.time === time
-                );
+            const timeSlot = $('<div></div>').text(time).data('time', time);
 
-                const timeSlot = $('<div></div>').text(time).data('time', time);
+            // Check if the appointment is in the past
+            const appointmentDateTime = new Date(date);
+            const [appointmentHour] = time.split(':');
+            appointmentDateTime.setHours(appointmentHour);
+            const isPast = appointmentDateTime < new Date(); // Check if the appointment time has already passed
 
-                // Check if the appointment is in the past
-                const appointmentDateTime = new Date(date);
-                const [appointmentHour] = time.split(':');
-                appointmentDateTime.setHours(appointmentHour);
-                const isPast = appointmentDateTime < new Date(); // Check if the appointment time has already passed
-
-                if (appointment) {
-                    // If there is an appointment, show name and telephone number
-                    const displayText = `${time} - ${appointment.name}, ${appointment.telephone}`;
-                    if (isPast) {
-                        timeSlot.addClass('booked').text(displayText).css('text-decoration', 'line-through');
-                    } else {
-                        timeSlot.addClass('booked').text(displayText);
-                        timeSlot.click(() => openAppointmentModal(date, time)); // Allow clicking for future appointments
-                    }
+            if (appointment) {
+                // If there is an appointment, show name and telephone number
+                const displayText = `${time} - ${appointment.name}, ${appointment.telephone}`;
+                if (isPast) {
+                    timeSlot.addClass('booked').text(displayText).css('text-decoration', 'line-through');
                 } else {
-                    // If no appointment, allow creating a new one
-                    timeSlot.click(() => openAppointmentModal(date, time));
+                    timeSlot.addClass('booked').text(displayText);
+                    timeSlot.click(() => openAppointmentModal(date, time)); // Allow clicking for future appointments
                 }
-
-                dayDiv.append(timeSlot);
+            } else {
+                // If no appointment, allow creating a new one
+                timeSlot.click(() => openAppointmentModal(date, time));
             }
 
-            $('#calendar').append(dayDiv);
+            dayDiv.append(timeSlot);
         }
-    })
-    .catch(error => {
-        alert('Failed to retrieve appointments: ' + error.message);
-    });
+
+        $('#calendar').append(dayDiv);
+    }
 }
 
 function openAppointmentModal(date, time) {
