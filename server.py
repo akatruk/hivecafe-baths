@@ -6,7 +6,7 @@ app = Flask(__name__)
 
 conn = psycopg2.connect(user="posgres",
                                 password="posgres",
-                                host="localhost",
+                                host="postgres",
                                 port="5432",
                                 database="app")
 
@@ -30,10 +30,10 @@ def create_appointment():
 
 if __name__ == '__main__':
     app.run(debug=True)
-
+# Соединение с базой данных PostgreSQL
 def get_db_connection():
     conn = psycopg2.connect(
-        host="localhost",
+        host="postgres",
         database="app",
         user="posgres",
         password="posgres"
