@@ -58,10 +58,37 @@ function openAppointmentModal(date, time) {
     $('#appointment-modal').show();
     $('#appointment-time').empty().append(`<option>${time}</option>`);
     
-    $('#schedule-appointment').off().click(() => scheduleAppointmentFromScheduleTab());
+    $('#schedule-appointment').off().click(() => scheduleAppointment(date, time));
 }
 
-// Function to schedule appointments from the schedule tab
+// function scheduleAppointmentFromScheduleTab() {
+//     const date = $('#appointment-date').val();
+//     const time = $('#appointment-time').val();
+//     const name = $('#name').val();
+//     const telephone = $('#telephone').val();
+
+//     if (!date || !time || !name || !telephone) {
+//         alert("Please fill in all fields.");
+//         return;
+//     }
+
+//     const appointmentDate = new Date(date);
+//     appointments.push({ name, telephone, date: appointmentDate, time }); // Store a new appointment
+//     alert(`Appointment scheduled for ${name} at ${time} on ${appointmentDate.toDateString()}`);
+    
+//     // Set a notification for 10 minutes before the appointment
+//     const appointmentDateTime = new Date(date);
+//     const [hour, minute] = time.split(':');
+//     appointmentDateTime.setHours(hour, minute);
+    
+//     const notificationTime = appointmentDateTime.getTime() - (10 * 60 * 1000); // 10 minutes before
+//     setTimeout(() => notify(name, telephone), notificationTime - Date.now());
+
+//     $('#name').val('');
+//     $('#telephone').val('');
+//     $('#calendar').empty(); // Clear the calendar∆
+//     createCalendar(); // Recreate calendar to reflect new appointments
+// }
 function scheduleAppointmentFromScheduleTab() {
     const date = $('#appointment-date').val();
     const time = $('#appointment-time').val();
