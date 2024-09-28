@@ -9,29 +9,10 @@ function openTab(evt, tabName) {
     $(evt.currentTarget).addClass('active');  // Add active class to the button that opened the tab
 }
 
-function fetchAppointments() {
-    fetch('https://nazi.today/appointments')
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
-            return response.json();
-        })
-        .then(data => {
-            appointments = data; // Update global appointments array
-            createCalendar(); // Recreate calendar to display fetched appointments
-        })
-        .catch(error => {
-            console.error('Error fetching appointments:', error);
-        });
-}
-
 function createCalendar() {
     const currentDate = new Date();
     const weekStart = currentDate.getDate() - currentDate.getDay(); // Start of the week
-    const weekEnd = weekStart + 6; // End of the week
-
-    $('#calendar').empty(); // Clear existing calendar content
+    const weekEnd = weekStart + 7; // End of the week
 
     for (let i = weekStart; i <= weekEnd; i++) {
         const date = new Date(currentDate.setDate(i));
@@ -41,7 +22,7 @@ function createCalendar() {
         for (let hour = 8; hour <= 20; hour++) { // Assuming appointments from 8 AM to 8 PM
             const time = `${hour}:00`;
             const appointment = appointments.find(app =>
-                new Date(app.date).toDateString() === date.toDateString() && app.time === time
+                app.date.toDateString() === date.toDateString() && app.time === time
             );
 
             const timeSlot = $('<div></div>').text(time).data('time', time);
@@ -71,6 +52,13 @@ function createCalendar() {
 
         $('#calendar').append(dayDiv);
     }
+}
+
+function openAppointmentModal(date, time) {
+    $('#appointment-modal').show();
+    $('#appointment-time').empty().append(`<option>${time}</option>`);
+    
+    $('#schedule-appointment').off().click(() => scheduleAppointmentFromScheduleTab());
 }
 
 // Function to schedule appointments from the schedule tab
@@ -145,7 +133,7 @@ function notify(name, telephone) {
 
 // Initialize the calendar when document is ready
 $(document).ready(() => {
-    fetchAppointments(); // Fetch appointments on page load
+    createCalendar();
 
     // Open the "Calendar" tab by default
     $('#calendar-tab').click();
