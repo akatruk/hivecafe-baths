@@ -1,5 +1,5 @@
 const token = '7835097683:AAE8W5EDRzbzRuCOYxwUwJlFePjF31uGFAc'; // Telegram bot token
-const appointments = []; // Array to store scheduled appointments
+let appointments = []; // Array to store scheduled appointments
 
 // Function to switch between tabs
 function openTab(evt, tabName) {
@@ -9,6 +9,7 @@ function openTab(evt, tabName) {
     $(evt.currentTarget).addClass('active');  // Add active class to the button that opened the tab
 }
 
+// Function to fetch appointments from the backend
 function fetchAppointments() {
     fetch('https://nazi.today/appointments')
         .then(response => {
@@ -26,7 +27,10 @@ function fetchAppointments() {
         });
 }
 
+// Function to create and display the calendar
 function createCalendar() {
+    console.log('Appointments:', appointments); // Log the appointments to check their contents
+
     const currentDate = new Date();
     const weekStart = currentDate.getDate() - currentDate.getDay(); // Start of the week
     const weekEnd = weekStart + 6; // End of the week
@@ -37,7 +41,6 @@ function createCalendar() {
         const date = new Date(currentDate.setDate(i));
         const dayDiv = $('<div></div>').addClass('day').text(date.toDateString());
 
-        // Append time slots to the day
         for (let hour = 8; hour <= 20; hour++) { // Assuming appointments from 8 AM to 8 PM
             const time = `${hour}:00`;
             const appointment = appointments.find(app =>
@@ -45,15 +48,13 @@ function createCalendar() {
             );
 
             const timeSlot = $('<div></div>').text(time).data('time', time);
-
             // Check if the appointment is in the past
             const appointmentDateTime = new Date(date);
             const [appointmentHour] = time.split(':');
             appointmentDateTime.setHours(appointmentHour);
-            const isPast = appointmentDateTime < new Date(); // Check if the appointment time has already passed
+            const isPast = appointmentDateTime < new Date();
 
             if (appointment) {
-                // If there is an appointment, show name and telephone number
                 const displayText = `${time} - ${appointment.name}, ${appointment.telephone}`;
                 if (isPast) {
                     timeSlot.addClass('booked').text(displayText).css('text-decoration', 'line-through');
@@ -62,7 +63,6 @@ function createCalendar() {
                     timeSlot.click(() => openAppointmentModal(date, time)); // Allow clicking for future appointments
                 }
             } else {
-                // If no appointment, allow creating a new one
                 timeSlot.click(() => openAppointmentModal(date, time));
             }
 
@@ -71,6 +71,14 @@ function createCalendar() {
 
         $('#calendar').append(dayDiv);
     }
+}
+
+// Function to open the appointment modal
+function openAppointmentModal(date, time) {
+    $('#appointment-modal').show();
+    $('#appointment-time').empty().append(`<option>${time}</option>`);
+
+    $('#schedule-appointment').off().click(() => scheduleAppointmentFromScheduleTab());
 }
 
 // Function to schedule appointments from the schedule tab
@@ -108,7 +116,7 @@ function scheduleAppointmentFromScheduleTab() {
     })
     .then(data => {
         alert(`Appointment scheduled for ${data.name} at ${data.time} on ${new Date(data.date).toDateString()}`);
-        
+
         // Set a notification for 10 minutes before the appointment
         const appointmentDateTime = new Date(date);
         const [hour, minute] = time.split(':');
@@ -121,13 +129,14 @@ function scheduleAppointmentFromScheduleTab() {
         $('#name').val('');
         $('#telephone').val('');
         $('#calendar').empty(); // Clear the calendar
-        createCalendar(); // Recreate calendar to reflect new appointments
+        fetchAppointments(); // Fetch appointments to reflect new appointments
     })
     .catch(error => {
         alert('Failed to schedule appointment: ' + error.message);
     });
 }
 
+// Function to send notification to Telegram
 function notify(name, telephone) {
     const message = `Appointment reminder: Your appointment with ${name}, ${telephone} is in 10 minutes.`;
     const chatId = '209164634'; // Replace with your chat ID
@@ -146,10 +155,6 @@ function notify(name, telephone) {
 // Initialize the calendar when document is ready
 $(document).ready(() => {
     fetchAppointments(); // Fetch appointments on page load
-
-    // Open the "Calendar" tab by default
-    $('#calendar-tab').click();
-
-    // Attach event handler to schedule appointment from the Schedule tab
+    $('#calendar-tab').click(); // Open the "Calendar" tab by default
     $('#schedule-appointment').click(scheduleAppointmentFromScheduleTab);
 });
