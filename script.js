@@ -101,7 +101,7 @@ function scheduleAppointmentFromScheduleTab() {
     };
 
     // Send the appointment data to the Flask server using Fetch API
-    fetch('http://backend:5000/appointments', {
+    fetch('https://nazi.today/appointments', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
