@@ -1,6 +1,6 @@
 server {
     listen 80;
-    server_name nazi.today;
+    server_name nazi.today;  # Your domain
 
     # Serve the Let's Encrypt ACME challenge files
     location /.well-known/acme-challenge/ {
@@ -16,7 +16,7 @@ server {
 
 server {
     listen 443 ssl;
-    server_name nazi.today;
+    server_name nazi.today;  # Your domain
 
     ssl_certificate /etc/letsencrypt/live/nazi.today/fullchain.pem;  # Fullchain for SSL
     ssl_certificate_key /etc/letsencrypt/live/nazi.today/privkey.pem;  # Private key for SSL
@@ -33,4 +33,13 @@ server {
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
     }
+
+    location /appointments {
+        proxy_pass http://backend:5000/appointments;  # Proxying to backend container
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
 }
+
