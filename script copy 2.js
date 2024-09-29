@@ -1,5 +1,5 @@
 const token = '7835097683:AAE8W5EDRzbzRuCOYxwUwJlFePjF31uGFAc'; // Telegram bot token
-let appointments = []; // Array to store scheduled appointments
+const appointments = []; // Array to store scheduled appointments
 
 // Function to switch between tabs
 function openTab(evt, tabName) {
@@ -9,52 +9,32 @@ function openTab(evt, tabName) {
     $(evt.currentTarget).addClass('active');  // Add active class to the button that opened the tab
 }
 
-// Function to fetch appointments from the backend
-function fetchAppointments() {
-    fetch('https://nazi.today/appointments')
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
-            return response.json();
-        })
-        .then(data => {
-            appointments = data; // Update global appointments array
-            createCalendar(); // Recreate calendar to display fetched appointments
-        })
-        .catch(error => {
-            console.error('Error fetching appointments:', error);
-        });
-}
-
-// Function to create and display the calendar
 function createCalendar() {
-    console.log('Appointments:', appointments); // Log the appointments to check their contents
-
     const currentDate = new Date();
     const weekStart = currentDate.getDate() - currentDate.getDay(); // Start of the week
-    const weekEnd = weekStart + 6; // End of the week
-
-    $('#calendar').empty(); // Clear existing calendar content
+    const weekEnd = weekStart + 7; // End of the week
 
     for (let i = weekStart; i <= weekEnd; i++) {
         const date = new Date(currentDate.setDate(i));
         const dayDiv = $('<div></div>').addClass('day').text(date.toDateString());
 
+        // Append time slots to the day
         for (let hour = 8; hour <= 20; hour++) { // Assuming appointments from 8 AM to 8 PM
             const time = `${hour}:00`;
             const appointment = appointments.find(app =>
-                new Date(app.date).toDateString() === date.toDateString() && app.time === time
+                app.date.toDateString() === date.toDateString() && app.time === time
             );
 
             const timeSlot = $('<div></div>').text(time).data('time', time);
+
             // Check if the appointment is in the past
             const appointmentDateTime = new Date(date);
             const [appointmentHour] = time.split(':');
             appointmentDateTime.setHours(appointmentHour);
-            const isPast = appointmentDateTime < new Date();
+            const isPast = appointmentDateTime < new Date(); // Check if the appointment time has already passed
 
             if (appointment) {
+                // If there is an appointment, show name and telephone number
                 const displayText = `${time} - ${appointment.name}, ${appointment.telephone}`;
                 if (isPast) {
                     timeSlot.addClass('booked').text(displayText).css('text-decoration', 'line-through');
@@ -63,6 +43,7 @@ function createCalendar() {
                     timeSlot.click(() => openAppointmentModal(date, time)); // Allow clicking for future appointments
                 }
             } else {
+                // If no appointment, allow creating a new one
                 timeSlot.click(() => openAppointmentModal(date, time));
             }
 
@@ -73,11 +54,10 @@ function createCalendar() {
     }
 }
 
-// Function to open the appointment modal
 function openAppointmentModal(date, time) {
     $('#appointment-modal').show();
     $('#appointment-time').empty().append(`<option>${time}</option>`);
-
+    
     $('#schedule-appointment').off().click(() => scheduleAppointmentFromScheduleTab());
 }
 
@@ -101,7 +81,7 @@ function scheduleAppointmentFromScheduleTab() {
     };
 
     // Send the appointment data to the Flask server using Fetch API
-    fetch('https://nazi.today/appointments', {
+    fetch('http://backend:5000/appointments', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
@@ -116,7 +96,7 @@ function scheduleAppointmentFromScheduleTab() {
     })
     .then(data => {
         alert(`Appointment scheduled for ${data.name} at ${data.time} on ${new Date(data.date).toDateString()}`);
-
+        
         // Set a notification for 10 minutes before the appointment
         const appointmentDateTime = new Date(date);
         const [hour, minute] = time.split(':');
@@ -129,14 +109,13 @@ function scheduleAppointmentFromScheduleTab() {
         $('#name').val('');
         $('#telephone').val('');
         $('#calendar').empty(); // Clear the calendar
-        fetchAppointments(); // Fetch appointments to reflect new appointments
+        createCalendar(); // Recreate calendar to reflect new appointments
     })
     .catch(error => {
         alert('Failed to schedule appointment: ' + error.message);
     });
 }
 
-// Function to send notification to Telegram
 function notify(name, telephone) {
     const message = `Appointment reminder: Your appointment with ${name}, ${telephone} is in 10 minutes.`;
     const chatId = '209164634'; // Replace with your chat ID
@@ -154,7 +133,11 @@ function notify(name, telephone) {
 
 // Initialize the calendar when document is ready
 $(document).ready(() => {
-    fetchAppointments(); // Fetch appointments on page load
-    $('#calendar-tab').click(); // Open the "Calendar" tab by default
+    createCalendar();
+
+    // Open the "Calendar" tab by default
+    $('#calendar-tab').click();
+
+    // Attach event handler to schedule appointment from the Schedule tab
     $('#schedule-appointment').click(scheduleAppointmentFromScheduleTab);
 });

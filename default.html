@@ -1,0 +1,45 @@
+server {
+    listen 80;
+    server_name nazi.today;  # Your domain
+
+    # Serve the Let's Encrypt ACME challenge files
+    location /.well-known/acme-challenge/ {
+        root /var/www/certbot;
+        allow all;  # Ensure access is allowed
+    }
+
+    # Redirect all HTTP requests to HTTPS
+    location / {
+        return 301 https://$host$request_uri;
+    }
+}
+
+server {
+    listen 443 ssl;
+    server_name nazi.today;  # Your domain
+
+    ssl_certificate /etc/letsencrypt/live/nazi.today/fullchain.pem;  # Fullchain for SSL
+    ssl_certificate_key /etc/letsencrypt/live/nazi.today/privkey.pem;  # Private key for SSL
+
+    # Optional: SSL Settings for improved security
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_ciphers 'HIGH:!aNULL:!MD5';
+    ssl_prefer_server_ciphers on;
+
+    location / {
+        proxy_pass http://hifecafe:80;  # Proxy to your web app
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    location /appointments {
+        proxy_pass http://backend:5000/appointments;  # Proxying to backend container
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
+
