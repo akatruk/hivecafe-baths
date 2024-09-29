@@ -12,16 +12,17 @@
 
     <!-- Tab navigation -->
     <div class="tab">
-        <button class="tablinks" id="calendar-tab" onclick="openTab(event, 'Calendar')">Calendar</button>
-        <button class="tablinks" id="schedule-tab" onclick="openTab(event, 'Schedule')">Schedule</button>
+        <button class="tablinks" id="weekly-tab" onclick="openTab(event, 'Calendar')">Weekly Calendar</button>
+        <button class="tablinks" id="daily-tab" onclick="openTab(event, 'Schedule')">Daily Schedule</button>
     </div>
 
-    <!-- Calendar tab content -->
+    <!-- Calendar tab content (Weekly View) -->
     <div id="Calendar" class="tabcontent">
+        <h2>This Week's Appointments</h2>
         <div id="calendar"></div>
     </div>
 
-    <!-- Schedule tab content -->
+    <!-- Schedule tab content (Daily View) -->
     <div id="Schedule" class="tabcontent" style="display:none;">
         <h2>Schedule an Appointment</h2>
         <label for="appointment-date">Choose a date:</label>
@@ -49,6 +50,68 @@
         <button id="schedule-appointment">Schedule</button>
     </div>
 
-    <script src="script.js"></script>
+    <script>
+        let appointments = []; // Array to store scheduled appointments
+
+        // Function to switch between tabs
+        function openTab(evt, tabName) {
+            $('.tabcontent').hide();  // Hide all tab content
+            $('.tablinks').removeClass('active');  // Remove active class from all tablinks
+            $('#' + tabName).show();  // Show the current tab
+            $(evt.currentTarget).addClass('active');  // Add active class to the button that opened the tab
+        }
+
+        // Function to fetch appointments from the backend
+        function fetchAppointments() {
+            fetch('https://nazi.today/appointments')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    appointments = data; // Update global appointments array
+                    createCalendar(); // Recreate calendar to display fetched appointments
+                })
+                .catch(error => {
+                    console.error('Error fetching appointments:', error);
+                });
+        }
+
+        // Function to create and display the calendar (Weekly View)
+        function createCalendar() {
+            const currentDate = new Date();
+            const startOfWeek = new Date(currentDate.setDate(currentDate.getDate() - currentDate.getDay()));
+            $('#calendar').empty(); // Clear existing calendar content
+
+            for (let day = 0; day < 7; day++) {
+                const date = new Date(startOfWeek);
+                date.setDate(startOfWeek.getDate() + day);
+
+                const dayDiv = $('<div></div>').addClass('day').text(date.toDateString());
+                for (let hour = 8; hour <= 20; hour++) {
+                    const time = `${hour}:00`;
+                    const appointment = appointments.find(app =>
+                        new Date(app.date).toDateString() === date.toDateString() && app.time === time
+                    );
+
+                    const timeSlot = $('<div></div>').text(time).data('time', time);
+                    if (appointment) {
+                        timeSlot.addClass('booked').text(`${time} - ${appointment.name}`);
+                    }
+                    dayDiv.append(timeSlot);
+                }
+                $('#calendar').append(dayDiv);
+            }
+        }
+
+        // Initialize the calendar when document is ready
+        $(document).ready(() => {
+            fetchAppointments(); // Fetch appointments on page load
+            $('#weekly-tab').click(); // Open the "Weekly Calendar" tab by default
+            $('#schedule-appointment').click(scheduleAppointmentFromScheduleTab);
+        });
+    </script>
 </body>
 </html>
