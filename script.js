@@ -20,52 +20,22 @@ function fetchAppointments() {
         })
         .then(data => {
             appointments = data; // Update global appointments array
-            createTodaySchedule(); // Display today's schedule
-            createWeeklySchedule(); // Display weekly schedule
+            createCalendar(); // Recreate calendar to display fetched appointments
         })
         .catch(error => {
             console.error('Error fetching appointments:', error);
         });
 }
 
-// Function to create and display today's schedule
-function createTodaySchedule() {
-    const today = new Date();
-    const todayDateStr = today.toDateString();
-    
-    $('#today-schedule').empty(); // Clear previous content
+// Function to create and display the calendar
+function createCalendar() {
+    console.log('Appointments:', appointments); // Log the appointments to check their contents
 
-    const dayDiv = $('<div></div>').addClass('day').text(todayDateStr);
-
-    for (let hour = 8; hour <= 20; hour++) { // Assuming appointments from 8 AM to 8 PM
-        const time = `${hour}:00`;
-        const appointment = appointments.find(app => new Date(app.date).toDateString() === todayDateStr && app.time === time);
-
-        const timeSlot = $('<div></div>').text(time).data('time', time);
-        const appointmentDateTime = new Date(today);
-        appointmentDateTime.setHours(hour);
-
-        if (appointment) {
-            const displayText = `${time} - ${appointment.name}, ${appointment.telephone}`;
-            timeSlot.addClass('booked').text(displayText);
-            timeSlot.click(() => openAppointmentModal(today, time));
-        } else {
-            timeSlot.click(() => openAppointmentModal(today, time));
-        }
-
-        dayDiv.append(timeSlot);
-    }
-
-    $('#today-schedule').append(dayDiv);
-}
-
-// Function to create and display the weekly schedule
-function createWeeklySchedule() {
     const currentDate = new Date();
     const weekStart = currentDate.getDate() - currentDate.getDay(); // Start of the week
     const weekEnd = weekStart + 6; // End of the week
 
-    $('#weekly-schedule').empty(); // Clear existing weekly schedule content
+    $('#week').empty(); // Clear existing calendar content
 
     for (let i = weekStart; i <= weekEnd; i++) {
         const date = new Date(currentDate.setDate(i));
@@ -73,16 +43,25 @@ function createWeeklySchedule() {
 
         for (let hour = 8; hour <= 20; hour++) { // Assuming appointments from 8 AM to 8 PM
             const time = `${hour}:00`;
-            const appointment = appointments.find(app => new Date(app.date).toDateString() === date.toDateString() && app.time === time);
+            const appointment = appointments.find(app =>
+                new Date(app.date).toDateString() === date.toDateString() && app.time === time
+            );
 
             const timeSlot = $('<div></div>').text(time).data('time', time);
+            // Check if the appointment is in the past
             const appointmentDateTime = new Date(date);
-            appointmentDateTime.setHours(hour);
+            const [appointmentHour] = time.split(':');
+            appointmentDateTime.setHours(appointmentHour);
+            const isPast = appointmentDateTime < new Date();
 
             if (appointment) {
                 const displayText = `${time} - ${appointment.name}, ${appointment.telephone}`;
-                timeSlot.addClass('booked').text(displayText);
-                timeSlot.click(() => openAppointmentModal(date, time));
+                if (isPast) {
+                    timeSlot.addClass('booked').text(displayText).css('text-decoration', 'line-through');
+                } else {
+                    timeSlot.addClass('booked').text(displayText);
+                    timeSlot.click(() => openAppointmentModal(date, time)); // Allow clicking for future appointments
+                }
             } else {
                 timeSlot.click(() => openAppointmentModal(date, time));
             }
@@ -90,7 +69,7 @@ function createWeeklySchedule() {
             dayDiv.append(timeSlot);
         }
 
-        $('#weekly-schedule').append(dayDiv);
+        $('#calendar').append(dayDiv);
     }
 }
 
@@ -138,6 +117,7 @@ function scheduleAppointmentFromScheduleTab() {
     .then(data => {
         alert(`Appointment scheduled for ${data.name} at ${data.time} on ${new Date(data.date).toDateString()}`);
 
+        // Set a notification for 10 minutes before the appointment
         const appointmentDateTime = new Date(date);
         const [hour, minute] = time.split(':');
         appointmentDateTime.setHours(hour, minute);
@@ -145,16 +125,36 @@ function scheduleAppointmentFromScheduleTab() {
         const notificationTime = appointmentDateTime.getTime() - (10 * 60 * 1000); // 10 minutes before
         setTimeout(() => notify(name, telephone), notificationTime - Date.now());
 
+        // Clear input fields
         $('#name').val('');
         $('#telephone').val('');
-        fetchAppointments();
+        $('#calendar').empty(); // Clear the calendar
+        fetchAppointments(); // Fetch appointments to reflect new appointments
     })
     .catch(error => {
         alert('Failed to schedule appointment: ' + error.message);
     });
 }
 
+// Function to send notification to Telegram
+function notify(name, telephone) {
+    const message = `Appointment reminder: Your appointment with ${name}, ${telephone} is in 10 minutes.`;
+    const chatId = '209164634'; // Replace with your chat ID
+
+    // Send notification message to Telegram
+    $.post(`https://api.telegram.org/bot${token}/sendMessage`, {
+        chat_id: chatId,
+        text: message
+    }).done(() => {
+        alert(`Notification sent to Telegram: ${message}`);
+    }).fail(() => {
+        alert('Failed to send notification to Telegram.');
+    });
+}
+
 // Initialize the calendar when document is ready
 $(document).ready(() => {
     fetchAppointments(); // Fetch appointments on page load
-    $('#day-tab').click(); // Show today's schedule by default
+    $('#calendar-tab').click(); // Open the "Calendar" tab by default
+    $('#schedule-appointment').click(scheduleAppointmentFromScheduleTab);
+});
