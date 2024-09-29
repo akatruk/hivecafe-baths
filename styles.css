@@ -136,4 +136,27 @@ button:hover {
     h1 {
         font-size: 1.3rem;
     }
+    .tab {
+        display: flex;
+        justify-content: space-around;
+    }
+    
+    .tab button {
+        padding: 10px;
+        cursor: pointer;
+    }
+    
+    .tabcontent {
+        display: none;
+    }
+    
+    .tabcontent.active {
+        display: block;
+    }
+    
+    #today-schedule, #weekly-schedule {
+        margin-top: 20px;
+    }
+    
 }
+
