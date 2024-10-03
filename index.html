@@ -6,6 +6,44 @@
     <title>Appointment Scheduler</title>
     <link rel="stylesheet" href="styles.css">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f9f9f9;
+        }
+        h1 {
+            color: #333;
+        }
+        .tab {
+            display: flex;
+            margin-bottom: 20px;
+        }
+        .tablinks {
+            padding: 10px 15px;
+            border: none;
+            background-color: #5cb85c;
+            color: white;
+            cursor: pointer;
+            margin-right: 5px;
+            border-radius: 5px;
+        }
+        .tablinks:hover {
+            background-color: #4cae4c;
+        }
+        .tabcontent {
+            display: none; /* Hide all tab contents by default */
+        }
+        .tabcontent.active {
+            display: block; /* Show active tab content */
+        }
+        #today-schedule {
+            border: 1px solid #ddd;
+            padding: 10px;
+            background-color: #fff;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+    </style>
 </head>
 <body>
     <h1>Appointment Scheduler</h1>
@@ -18,17 +56,23 @@
     </div>
 
     <!-- Today's Schedule tab content -->
-    <div id="Today" class="tabcontent">
-        <div id="today-schedule"></div>
+    <div id="Today" class="tabcontent active">
+        <h2>Today's Schedule</h2>
+        <div id="today-schedule">
+            <p>Loading today's appointments...</p>
+        </div>
     </div>
 
     <!-- Calendar tab content -->
-    <div id="Calendar" class="tabcontent" style="display:none;">
-        <div id="calendar"></div>
+    <div id="Calendar" class="tabcontent">
+        <h2>Weekly Calendar</h2>
+        <div id="calendar">
+            <p>Weekly calendar view goes here.</p>
+        </div>
     </div>
 
     <!-- Schedule tab content -->
-    <div id="Schedule" class="tabcontent" style="display:none;">
+    <div id="Schedule" class="tabcontent">
         <h2>Schedule an Appointment</h2>
         <label for="appointment-date">Choose a date:</label>
         <input type="date" id="appointment-date" required>
@@ -55,6 +99,34 @@
         <button id="schedule-appointment">Schedule</button>
     </div>
 
-    <script src="script.js"></script>
+    <script>
+        // Function to switch between tabs
+        function openTab(evt, tabName) {
+            // Hide all tab contents
+            var tabcontents = document.getElementsByClassName("tabcontent");
+            for (var i = 0; i < tabcontents.length; i++) {
+                tabcontents[i].style.display = "none";
+            }
+            // Remove the active class from all tab links
+            var tablinks = document.getElementsByClassName("tablinks");
+            for (var i = 0; i < tablinks.length; i++) {
+                tablinks[i].className = tablinks[i].className.replace(" active", "");
+            }
+            // Show the current tab and add an "active" class to the link that opened the tab
+            document.getElementById(tabName).style.display = "block";
+            evt.currentTarget.className += " active";
+        }
+
+        // Fetch today's appointments
+        function fetchAppointments() {
+            // Placeholder for fetching logic
+            $('#today-schedule').html('<p>No appointments for today.</p>');
+        }
+
+        // Fetch appointments when the page loads
+        $(document).ready(function() {
+            fetchAppointments(); // Fetch appointments to display today's schedule
+        });
+    </script>
 </body>
 </html>
