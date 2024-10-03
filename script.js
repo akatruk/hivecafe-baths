@@ -132,9 +132,11 @@ function scheduleAppointmentFromScheduleTab() {
         const appointmentDateTime = new Date(date);
         const [hour, minute] = time.split(':');
         appointmentDateTime.setHours(hour, minute);
-        const notificationTime = appointmentDateTime.getTime() - (10 * 60 * 1000); // 10 minutes before
+        const notificationTime30 = appointmentDateTime.getTime() - (30 * 60 * 1000); // 30 minutes before
+        const notificationTime60 = appointmentDateTime.getTime() - (30 * 60 * 1000); // 30 minutes before
 
-        setTimeout(() => notify(data.name, data.telephone), notificationTime - Date.now());
+        setTimeout(() => notify(data.name, data.telephone), notificationTime30 - Date.now());
+        setTimeout(() => notify(data.name, data.telephone), notificationTime60 - Date.now());
 
         fetchAppointments(); // Refresh the appointments
     })
