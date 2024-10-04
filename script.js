@@ -72,6 +72,25 @@ function createWeeklyCalendar() {
     }
 }
 
+// Function to create today's schedule
+function createTodaySchedule() {
+    const today = new Date().toDateString(); // Get current day's date string
+    $('#today-schedule').empty(); // Clear previous day's schedule
+
+    const todayAppointments = appointments.filter(app => new Date(app.date).toDateString() === today);
+    
+    if (todayAppointments.length === 0) {
+        $('#today-schedule').append('<p>No appointments for today.</p>');
+        return;
+    }
+
+    todayAppointments.forEach(appointment => {
+        const appointmentDiv = $('<div></div>')
+            .addClass('appointment')
+            .text(`${appointment.time} - ${appointment.name}, ${appointment.telephone}`);
+        $('#today-schedule').append(appointmentDiv);
+    });
+}
 
 // Function to open the appointment modal (unchanged)
 function openAppointmentModal(date, time) {
