@@ -159,6 +159,7 @@ function notify(name, telephone) {
     });
 }
 
+
 // Initialize the calendar when the document is ready
 $(document).ready(() => {
     fetchAppointments(); // Fetch appointments on page load
