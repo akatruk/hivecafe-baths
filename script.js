@@ -133,6 +133,7 @@ $(document).ready(() => {
     $('#next-week').click(() => switchWeek('next'));
     openTab(null, 'Today');  // Show "Today's Schedule" tab by default
     $('#calendar-controls').hide();  // Ensure week controls are hidden initially
+    $(document).on('click', '#schedule-appointment', scheduleAppointmentFromScheduleTab);
 });
 
 
