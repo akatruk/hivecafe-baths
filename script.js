@@ -5,8 +5,8 @@ let appointments = []; // Array to store scheduled appointments
 function openTab(evt, tabName) {
     $('.tabcontent').hide();  // Hide all tab content
     $('.tablinks').removeClass('active');  // Remove active class from all tablinks
-    $('#' + tabName).show();  // Show the selected tab
-    $(evt.currentTarget).addClass('active');  // Add active class to the clicked button
+    $('#' + tabName).show();  // Show the current tab
+    $(evt.currentTarget).addClass('active');  // Add active class to the button that opened the tab
 }
 
 // Function to fetch appointments from the backend
@@ -27,6 +27,14 @@ function fetchAppointments() {
             console.error('Error fetching appointments:', error);
         });
 }
+
+function getWeekStart(date) {
+    const currentDate = new Date(date);
+    const firstDayOfWeek = currentDate.getDate() - currentDate.getDay();
+    return new Date(currentDate.setDate(firstDayOfWeek));
+}
+
+let currentWeekStart; 
 
 // Function to create the weekly calendar
 function createWeeklyCalendar(weekStartDate = new Date()) {
@@ -162,22 +170,24 @@ function notify(name, telephone) {
     });
 }
 
-let currentWeekStart; // This will track the start of the current week
 
-// Function to calculate the start of the week
-function getWeekStart(date) {
-    const currentDate = new Date(date);
-    const firstDayOfWeek = currentDate.getDate() - currentDate.getDay();
-    return new Date(currentDate.setDate(firstDayOfWeek));
-}
 
-// Switch to the next or previous week
+
 function switchWeek(direction) {
     const weekOffset = direction === 'next' ? 7 : -7; // Move forward or backward by 7 days
     const newWeekStart = new Date(currentWeekStart);
     newWeekStart.setDate(currentWeekStart.getDate() + weekOffset);
     createWeeklyCalendar(newWeekStart);
 }
+
+// Initialize the calendar when the document is ready
+$(document).ready(() => {
+    createWeeklyCalendar(); // Start by showing the current week
+
+    // Add event listeners for the week navigation buttons
+    $('#prev-week').click(() => switchWeek('prev'));
+    $('#next-week').click(() => switchWeek('next'));
+});
 
 // Initialize the calendar when the document is ready
 $(document).ready(() => {
