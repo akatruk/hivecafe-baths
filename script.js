@@ -30,39 +30,28 @@ function fetchAppointments() {
 
 // Function to create the weekly calendar
 function createWeeklyCalendar() {
-    const currentDate = new Date();
-    const weekStart = currentDate.getDate() - currentDate.getDay(); // Start of the week
-    const weekEnd = weekStart + 6; // End of the week
-
     $('#calendar').empty(); // Clear existing calendar content
+    const currentDate = new Date();
+    const weekStart = currentDate.getDate() - currentDate.getDay();
+    const weekEnd = weekStart + 6;
 
     for (let i = weekStart; i <= weekEnd; i++) {
         const date = new Date(currentDate.setDate(i));
         const dayDiv = $('<div></div>').addClass('day').text(date.toDateString());
 
-        for (let hour = 8; hour <= 20; hour++) { // Assuming appointments from 8 AM to 8 PM
+        for (let hour = 8; hour <= 20; hour++) {
             const time = `${hour}:00`;
-            const appointment = appointments.find(app =>
-                new Date(app.date).toDateString() === date.toDateString() && app.time === time
-            );
+            const appointment = appointments.find(app => new Date(app.date).toDateString() === date.toDateString() && app.time === time);
 
             const timeSlot = $('<div></div>').text(time).data('time', time);
-            // Check if the appointment is in the past
-            const appointmentDateTime = new Date(date);
-            const [appointmentHour] = time.split(':');
-            appointmentDateTime.setHours(appointmentHour);
-            const isPast = appointmentDateTime < new Date();
 
             if (appointment) {
                 const displayText = `${time} - ${appointment.name}, ${appointment.telephone}`;
-                if (isPast) {
-                    timeSlot.addClass('booked').text(displayText).css('text-decoration', 'line-through');
-                } else {
-                    timeSlot.addClass('booked').text(displayText);
-                    timeSlot.click(() => openAppointmentModal(date, time)); // Allow clicking for future appointments
-                }
-            } else {
-                timeSlot.click(() => openAppointmentModal(date, time));
+                timeSlot.addClass('booked').text(displayText);
+
+                // Add delete button
+                const deleteButton = $('<button></button>').text('Delete').click(() => deleteAppointment(appointment.id));
+                timeSlot.append(deleteButton);
             }
 
             dayDiv.append(timeSlot);
@@ -74,21 +63,21 @@ function createWeeklyCalendar() {
 
 // Function to create today's schedule
 function createTodaySchedule() {
-    const today = new Date().toDateString(); // Get current day's date string
-    $('#today-schedule').empty(); // Clear previous day's schedule
+    $('#today-schedule').empty(); // Clear existing schedule content
+    const today = new Date().toDateString();
 
-    const todayAppointments = appointments.filter(app => new Date(app.date).toDateString() === today);
-    
-    if (todayAppointments.length === 0) {
-        $('#today-schedule').append('<p>No appointments for today.</p>');
-        return;
-    }
+    appointments.forEach(app => {
+        const appointmentDate = new Date(app.date).toDateString();
+        if (appointmentDate === today) {
+            const appointmentDiv = $('<div></div>').addClass('appointment');
+            appointmentDiv.text(`${app.time} - ${app.name}, ${app.telephone}`);
 
-    todayAppointments.forEach(appointment => {
-        const appointmentDiv = $('<div></div>')
-            .addClass('appointment')
-            .text(`${appointment.time} - ${appointment.name}, ${appointment.telephone}`);
-        $('#today-schedule').append(appointmentDiv);
+            // Add delete button next to each appointment
+            const deleteButton = $('<button></button>').text('Delete').click(() => deleteAppointment(app.id));
+            appointmentDiv.append(deleteButton);
+
+            $('#today-schedule').append(appointmentDiv);
+        }
     });
 }
 
