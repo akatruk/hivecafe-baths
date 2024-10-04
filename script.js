@@ -6,7 +6,25 @@ function openTab(evt, tabName) {
     $('.tabcontent').hide();  // Hide all tab content
     $('.tablinks').removeClass('active');  // Remove active class from all tablinks
     $('#' + tabName).show();  // Show the current tab
-    $(evt.currentTarget).addClass('active');  // Add active class to the button that opened the tab
+
+    // If evt is provided, add active class
+    if (evt && evt.currentTarget) {
+        $(evt.currentTarget).addClass('active');  // Add active class to the button that opened the tab
+    } else {
+        // Find the button for the currently active tab and add 'active' class if evt is null
+        $('.tablinks').each(function() {
+            if ($(this).text() === tabName.replace(' ', "'s ")) {
+                $(this).addClass('active');
+            }
+        });
+    }
+
+    // Show or hide week navigation buttons based on the selected tab
+    if (tabName === 'Today') {
+        $('#calendar-controls').hide();  // Hide previous/next week buttons
+    } else if (tabName === 'Calendar') {
+        $('#calendar-controls').show();  // Show previous/next week buttons
+    }
 }
 
 // Function to fetch appointments from the backend
@@ -19,6 +37,7 @@ function fetchAppointments() {
             return response.json();
         })
         .then(data => {
+            console.log("Fetched appointments:", data); // Debug line
             appointments = data; // Update global appointments array
             createWeeklyCalendar(); // Recreate calendar to display weekly appointments
             createTodaySchedule();  // Create today's schedule
@@ -28,16 +47,26 @@ function fetchAppointments() {
         });
 }
 
+function getWeekStart(date) {
+    const currentDate = new Date(date);
+    const firstDayOfWeek = currentDate.getDate() - currentDate.getDay();
+    return new Date(currentDate.setDate(firstDayOfWeek));
+}
+
+let currentWeekStart; 
+
 // Function to create the weekly calendar
-function createWeeklyCalendar() {
-    const currentDate = new Date();
-    const weekStart = currentDate.getDate() - currentDate.getDay(); // Start of the week
-    const weekEnd = weekStart + 6; // End of the week
+function createWeeklyCalendar(weekStartDate = new Date()) {
+    currentWeekStart = getWeekStart(weekStartDate); // Set current week start
+
+    const weekStart = currentWeekStart.getDate();
+    const weekEnd = weekStart + 6;
 
     $('#calendar').empty(); // Clear existing calendar content
 
     for (let i = weekStart; i <= weekEnd; i++) {
-        const date = new Date(currentDate.setDate(i));
+        const date = new Date(currentWeekStart);
+        date.setDate(i); // Set date for each day of the week
         const dayDiv = $('<div></div>').addClass('day').text(date.toDateString());
 
         for (let hour = 8; hour <= 20; hour++) { // Assuming appointments from 8 AM to 8 PM
@@ -47,6 +76,7 @@ function createWeeklyCalendar() {
             );
 
             const timeSlot = $('<div></div>').text(time).data('time', time);
+
             // Check if the appointment is in the past
             const appointmentDateTime = new Date(date);
             const [appointmentHour] = time.split(':');
@@ -98,6 +128,13 @@ function openAppointmentModal(date, time) {
     $('#appointment-time').empty().append(`<option>${time}</option>`);
 
     $('#schedule-appointment').off().click(() => scheduleAppointmentFromScheduleTab());
+}
+
+function switchWeek(direction) {
+    const weekOffset = direction === 'next' ? 7 : -7; // Move forward or backward by 7 days
+    const newWeekStart = new Date(currentWeekStart);
+    newWeekStart.setDate(currentWeekStart.getDate() + weekOffset);
+    createWeeklyCalendar(newWeekStart);
 }
 
 // Schedule appointment function (with notification to Telegram)
@@ -159,9 +196,13 @@ function notify(name, telephone) {
     });
 }
 
-// Initialize the calendar when the document is ready
 $(document).ready(() => {
-    fetchAppointments(); // Fetch appointments on page load
-    $('#calendar-tab').click(); // Open the "Calendar" tab by default
-    $('#schedule-appointment').click(scheduleAppointmentFromScheduleTab);
+    fetchAppointments(); // Start by fetching appointments
+    $('#prev-week').click(() => switchWeek('prev'));
+    $('#next-week').click(() => switchWeek('next'));
+    
+    // Instead of passing null, directly handle the tab switching
+    openTab(null, 'Today');  // Show "Today's Schedule" tab by default
+    $('#calendar-controls').hide();  // Ensure week controls are hidden initially
+    $(document).on('click', '#schedule-appointment', scheduleAppointmentFromScheduleTab);
 });

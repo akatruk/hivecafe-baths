@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="styles.css">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="script.js" defer></script>
-    <script src="appointments.js" defer></script>
+    <!-- <script src="appointments.js" defer></script> -->
 </head>
 <body>
     <h1>Appointment Scheduler</h1>
@@ -28,7 +28,12 @@
     <div id="Calendar" class="tabcontent" style="display:none;">
         <div id="calendar"></div>
     </div>
-
+    <div id="calendar-controls">
+        <button id="prev-week">Previous Week</button>
+        <button id="next-week">Next Week</button>
+    </div>
+    
+    <div id="calendar"></div>    
     <!-- Schedule tab content -->
     <div id="Schedule" class="tabcontent" style="display:none;">
         <h2>Schedule an Appointment</h2>
