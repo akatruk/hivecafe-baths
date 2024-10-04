@@ -29,15 +29,17 @@ function fetchAppointments() {
 }
 
 // Function to create the weekly calendar
-function createWeeklyCalendar() {
-    const currentDate = new Date();
-    const weekStart = currentDate.getDate() - currentDate.getDay(); // Start of the week
-    const weekEnd = weekStart + 6; // End of the week
+function createWeeklyCalendar(weekStartDate = new Date()) {
+    currentWeekStart = getWeekStart(weekStartDate); // Set current week start
+
+    const weekStart = currentWeekStart.getDate();
+    const weekEnd = weekStart + 6;
 
     $('#calendar').empty(); // Clear existing calendar content
 
     for (let i = weekStart; i <= weekEnd; i++) {
-        const date = new Date(currentDate.setDate(i));
+        const date = new Date(currentWeekStart);
+        date.setDate(i); // Set date for each day of the week
         const dayDiv = $('<div></div>').addClass('day').text(date.toDateString());
 
         for (let hour = 8; hour <= 20; hour++) { // Assuming appointments from 8 AM to 8 PM
@@ -47,6 +49,7 @@ function createWeeklyCalendar() {
             );
 
             const timeSlot = $('<div></div>').text(time).data('time', time);
+
             // Check if the appointment is in the past
             const appointmentDateTime = new Date(date);
             const [appointmentHour] = time.split(':');
@@ -159,9 +162,28 @@ function notify(name, telephone) {
     });
 }
 
+let currentWeekStart; // This will track the start of the current week
+
+// Function to calculate the start of the week
+function getWeekStart(date) {
+    const currentDate = new Date(date);
+    const firstDayOfWeek = currentDate.getDate() - currentDate.getDay();
+    return new Date(currentDate.setDate(firstDayOfWeek));
+}
+
+// Switch to the next or previous week
+function switchWeek(direction) {
+    const weekOffset = direction === 'next' ? 7 : -7; // Move forward or backward by 7 days
+    const newWeekStart = new Date(currentWeekStart);
+    newWeekStart.setDate(currentWeekStart.getDate() + weekOffset);
+    createWeeklyCalendar(newWeekStart);
+}
+
 // Initialize the calendar when the document is ready
 $(document).ready(() => {
-    fetchAppointments(); // Fetch appointments on page load
-    $('#calendar-tab').click(); // Open the "Calendar" tab by default
-    $('#schedule-appointment').click(scheduleAppointmentFromScheduleTab);
+    createWeeklyCalendar(); // Start by showing the current week
+
+    // Add event listeners for the week navigation buttons
+    $('#prev-week').click(() => switchWeek('prev'));
+    $('#next-week').click(() => switchWeek('next'));
 });
