@@ -55,21 +55,11 @@ function createWeeklyCalendar() {
 
             if (appointment) {
                 const displayText = `${time} - ${appointment.name}, ${appointment.telephone}`;
-                const deleteButton = $('<button></button>').text('Delete').addClass('delete-btn');
-
-                // Append delete button to the appointment slot
-                timeSlot.addClass('booked').text(displayText).append(deleteButton);
-
                 if (isPast) {
-                    timeSlot.css('text-decoration', 'line-through');
-                }
-
-                // Add click event for deleting the appointment
-                deleteButton.click(() => deleteAppointment(appointment.id));
-
-                // Allow clicking for future appointments (if needed)
-                if (!isPast) {
-                    timeSlot.click(() => openAppointmentModal(date, time));
+                    timeSlot.addClass('booked').text(displayText).css('text-decoration', 'line-through');
+                } else {
+                    timeSlot.addClass('booked').text(displayText);
+                    timeSlot.click(() => openAppointmentModal(date, time)); // Allow clicking for future appointments
                 }
             } else {
                 timeSlot.click(() => openAppointmentModal(date, time));
@@ -82,27 +72,8 @@ function createWeeklyCalendar() {
     }
 }
 
-// Function to delete an appointment
-function deleteAppointment(appointmentId) {
-    if (confirm("Are you sure you want to delete this appointment?")) {
-        fetch(`https://nazi.today/appointments/${appointmentId}`, {
-            method: 'DELETE',
-        })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Failed to delete the appointment.');
-            }
-            alert('Appointment deleted successfully.');
-            fetchAppointments(); // Refresh the calendar
-        })
-        .catch(error => {
-            console.error('Error deleting appointment:', error);
-            alert('Failed to delete the appointment.');
-        });
-    }
-}
 
-// Function to open the appointment modal
+// Function to open the appointment modal (unchanged)
 function openAppointmentModal(date, time) {
     $('#appointment-modal').show();
     $('#appointment-time').empty().append(`<option>${time}</option>`);
@@ -138,13 +109,15 @@ function scheduleAppointmentFromScheduleTab() {
     .then(data => {
         alert(`Appointment scheduled for ${data.name} at ${data.time} on ${new Date(data.date).toDateString()}`);
         
-        // Schedule the notification 30 minutes before the appointment
+        // Schedule the notification 10 minutes before the appointment
         const appointmentDateTime = new Date(date);
         const [hour, minute] = time.split(':');
         appointmentDateTime.setHours(hour, minute);
         const notificationTime30 = appointmentDateTime.getTime() - (30 * 60 * 1000); // 30 minutes before
+        const notificationTime60 = appointmentDateTime.getTime() - (30 * 60 * 1000); // 30 minutes before
 
         setTimeout(() => notify(data.name, data.telephone), notificationTime30 - Date.now());
+        setTimeout(() => notify(data.name, data.telephone), notificationTime60 - Date.now());
 
         fetchAppointments(); // Refresh the appointments
     })
@@ -153,7 +126,7 @@ function scheduleAppointmentFromScheduleTab() {
 
 // Function to send notification to Telegram
 function notify(name, telephone) {
-    const message = `Appointment reminder: Your appointment with ${name}, ${telephone} is in 30 minutes.`;
+    const message = `Appointment reminder: Your appointment with ${name}, ${telephone} is in 10 minutes.`;
     const chatId = '209164634'; // Replace with your chat ID
 
     // Send notification message to Telegram
