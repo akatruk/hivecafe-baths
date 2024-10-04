@@ -20,17 +20,16 @@ function fetchAppointments() {
         })
         .then(data => {
             appointments = data; // Update global appointments array
-            createCalendar(); // Recreate calendar to display fetched appointments
+            createWeeklyCalendar(); // Recreate calendar to display weekly appointments
+            createTodaySchedule();  // Create today's schedule
         })
         .catch(error => {
             console.error('Error fetching appointments:', error);
         });
 }
 
-// Function to create and display the calendar
-function createCalendar() {
-    console.log('Appointments:', appointments); // Log the appointments to check their contents
-
+// Function to create the weekly calendar
+function createWeeklyCalendar() {
     const currentDate = new Date();
     const weekStart = currentDate.getDate() - currentDate.getDay(); // Start of the week
     const weekEnd = weekStart + 6; // End of the week
@@ -73,7 +72,27 @@ function createCalendar() {
     }
 }
 
-// Function to open the appointment modal
+// Function to create today's schedule
+function createTodaySchedule() {
+    const today = new Date().toDateString(); // Get current day's date string
+    $('#today-schedule').empty(); // Clear previous day's schedule
+
+    const todayAppointments = appointments.filter(app => new Date(app.date).toDateString() === today);
+    
+    if (todayAppointments.length === 0) {
+        $('#today-schedule').append('<p>No appointments for today.</p>');
+        return;
+    }
+
+    todayAppointments.forEach(appointment => {
+        const appointmentDiv = $('<div></div>')
+            .addClass('appointment')
+            .text(`${appointment.time} - ${appointment.name}, ${appointment.telephone}`);
+        $('#today-schedule').append(appointmentDiv);
+    });
+}
+
+// Function to open the appointment modal (unchanged)
 function openAppointmentModal(date, time) {
     $('#appointment-modal').show();
     $('#appointment-time').empty().append(`<option>${time}</option>`);
@@ -81,7 +100,7 @@ function openAppointmentModal(date, time) {
     $('#schedule-appointment').off().click(() => scheduleAppointmentFromScheduleTab());
 }
 
-// Function to schedule appointments from the schedule tab
+// Schedule appointment function (with notification to Telegram)
 function scheduleAppointmentFromScheduleTab() {
     const date = $('#appointment-date').val();
     const time = $('#appointment-time').val();
@@ -93,19 +112,11 @@ function scheduleAppointmentFromScheduleTab() {
         return;
     }
 
-    const appointmentData = {
-        name,
-        telephone,
-        date,
-        time
-    };
+    const appointmentData = { name, telephone, date, time };
 
-    // Send the appointment data to the Flask server using Fetch API
     fetch('https://nazi.today/appointments', {
         method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(appointmentData)
     })
     .then(response => {
@@ -116,24 +127,20 @@ function scheduleAppointmentFromScheduleTab() {
     })
     .then(data => {
         alert(`Appointment scheduled for ${data.name} at ${data.time} on ${new Date(data.date).toDateString()}`);
-
-        // Set a notification for 10 minutes before the appointment
+        
+        // Schedule the notification 10 minutes before the appointment
         const appointmentDateTime = new Date(date);
         const [hour, minute] = time.split(':');
         appointmentDateTime.setHours(hour, minute);
-        
-        const notificationTime = appointmentDateTime.getTime() - (10 * 60 * 1000); // 10 minutes before
-        setTimeout(() => notify(name, telephone), notificationTime - Date.now());
+        const notificationTime30 = appointmentDateTime.getTime() - (30 * 60 * 1000); // 30 minutes before
+        const notificationTime60 = appointmentDateTime.getTime() - (30 * 60 * 1000); // 30 minutes before
 
-        // Clear input fields
-        $('#name').val('');
-        $('#telephone').val('');
-        $('#calendar').empty(); // Clear the calendar
-        fetchAppointments(); // Fetch appointments to reflect new appointments
+        setTimeout(() => notify(data.name, data.telephone), notificationTime30 - Date.now());
+        setTimeout(() => notify(data.name, data.telephone), notificationTime60 - Date.now());
+
+        fetchAppointments(); // Refresh the appointments
     })
-    .catch(error => {
-        alert('Failed to schedule appointment: ' + error.message);
-    });
+    .catch(error => alert('Failed to schedule appointment: ' + error.message));
 }
 
 // Function to send notification to Telegram
@@ -152,7 +159,7 @@ function notify(name, telephone) {
     });
 }
 
-// Initialize the calendar when document is ready
+// Initialize the calendar when the document is ready
 $(document).ready(() => {
     fetchAppointments(); // Fetch appointments on page load
     $('#calendar-tab').click(); // Open the "Calendar" tab by default

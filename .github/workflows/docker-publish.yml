@@ -3,7 +3,7 @@ name: Build and Push Docker Image
 on:
   push:
     branches:
-      - new-style
+      - daily
 
 jobs:
   build:
@@ -21,16 +21,16 @@ jobs:
 
     - name: Build the Docker image frontend
       run: |
-        docker build -f dockerfile.frontend -t errbx/hifecafe:new-style .
+        docker build -f dockerfile.frontend -t errbx/hifecafe:daily .
   
     - name: Build the Docker image backend
       run: |
         docker build -f dockerfile.backend -t errbx/hifecafe:backend .
   
-    - name: Push the Docker image
+    - name: Push the Docker image frontend
       run: |
-        docker push errbx/hifecafe:new-style
+        docker push errbx/hifecafe:daily
 
-    - name: Push the Docker image
+    - name: Push the Docker image backend
       run: |
         docker push errbx/hifecafe:backend

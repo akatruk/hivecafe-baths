@@ -6,18 +6,26 @@
     <title>Appointment Scheduler</title>
     <link rel="stylesheet" href="styles.css">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="script.js" defer></script>
+    <script src="appointments.js" defer></script>
 </head>
 <body>
     <h1>Appointment Scheduler</h1>
 
     <!-- Tab navigation -->
     <div class="tab">
-        <button class="tablinks" id="calendar-tab" onclick="openTab(event, 'Calendar')">Calendar</button>
-        <button class="tablinks" id="schedule-tab" onclick="openTab(event, 'Schedule')">Schedule</button>
+        <button class="tablinks" id="today-tab" onclick="openTab(event, 'Today')">Today's Schedule</button>
+        <button class="tablinks" id="calendar-tab" onclick="openTab(event, 'Calendar')">Weekly Calendar</button>
+        <button class="tablinks" id="schedule-tab" onclick="openTab(event, 'Schedule')">Schedule Appointment</button>
+    </div>
+
+    <!-- Today's Schedule tab content -->
+    <div id="Today" class="tabcontent">
+        <div id="today-schedule"></div>
     </div>
 
     <!-- Calendar tab content -->
-    <div id="Calendar" class="tabcontent">
+    <div id="Calendar" class="tabcontent" style="display:none;">
         <div id="calendar"></div>
     </div>
 
@@ -50,5 +58,11 @@
     </div>
 
     <script src="script.js"></script>
+    <script>
+        // Automatically open Today's Schedule when the page loads
+        $(document).ready(() => {
+            openTab({ currentTarget: document.getElementById('today-tab') }, 'Today'); // Open Today's Schedule tab
+        });
+    </script>
 </body>
 </html>
