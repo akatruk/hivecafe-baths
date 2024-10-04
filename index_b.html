@@ -56,5 +56,11 @@
     </div>
 
     <script src="script.js"></script>
+    <script>
+        // Automatically open Today's Schedule when the page loads
+        $(document).ready(() => {
+            openTab({ currentTarget: document.getElementById('today-tab') }, 'Today'); // Open Today's Schedule tab
+        });
+    </script>
 </body>
 </html>
