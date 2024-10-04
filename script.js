@@ -6,7 +6,18 @@ function openTab(evt, tabName) {
     $('.tabcontent').hide();  // Hide all tab content
     $('.tablinks').removeClass('active');  // Remove active class from all tablinks
     $('#' + tabName).show();  // Show the current tab
-    $(evt.currentTarget).addClass('active');  // Add active class to the button that opened the tab
+
+    // If evt is provided, add active class
+    if (evt && evt.currentTarget) {
+        $(evt.currentTarget).addClass('active');  // Add active class to the button that opened the tab
+    } else {
+        // Find the button for the currently active tab and add 'active' class if evt is null
+        $('.tablinks').each(function() {
+            if ($(this).text() === tabName.replace(' ', "'s ")) {
+                $(this).addClass('active');
+            }
+        });
+    }
 
     // Show or hide week navigation buttons based on the selected tab
     if (tabName === 'Today') {
@@ -126,19 +137,6 @@ function switchWeek(direction) {
     createWeeklyCalendar(newWeekStart);
 }
 
-// Initialize the calendar when the document is ready
-$(document).ready(() => {
-    fetchAppointments(); // Start by fetching appointments
-    $('#prev-week').click(() => switchWeek('prev'));
-    $('#next-week').click(() => switchWeek('next'));
-    openTab(null, 'Today');  // Show "Today's Schedule" tab by default
-    $('#calendar-controls').hide();  // Ensure week controls are hidden initially
-    $(document).on('click', '#schedule-appointment', scheduleAppointmentFromScheduleTab);
-});
-
-
-
-
 // Schedule appointment function (with notification to Telegram)
 function scheduleAppointmentFromScheduleTab() {
     const date = $('#appointment-date').val();
@@ -197,3 +195,14 @@ function notify(name, telephone) {
         alert('Failed to send notification to Telegram.');
     });
 }
+
+$(document).ready(() => {
+    fetchAppointments(); // Start by fetching appointments
+    $('#prev-week').click(() => switchWeek('prev'));
+    $('#next-week').click(() => switchWeek('next'));
+    
+    // Instead of passing null, directly handle the tab switching
+    openTab(null, 'Today');  // Show "Today's Schedule" tab by default
+    $('#calendar-controls').hide();  // Ensure week controls are hidden initially
+    $(document).on('click', '#schedule-appointment', scheduleAppointmentFromScheduleTab);
+});
