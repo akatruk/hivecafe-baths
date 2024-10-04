@@ -6,7 +6,11 @@ function openTab(evt, tabName) {
     $('.tabcontent').hide();  // Hide all tab content
     $('.tablinks').removeClass('active');  // Remove active class from all tablinks
     $('#' + tabName).show();  // Show the current tab
-    $(evt.currentTarget).addClass('active');  // Add active class to the button that opened the tab
+    
+    // Only try to access evt.currentTarget if evt is defined
+    if (evt) {
+        $(evt.currentTarget).addClass('active');  // Add active class to the button that opened the tab
+    }
 
     // Show or hide week navigation buttons based on the selected tab
     if (tabName === 'Today') {
