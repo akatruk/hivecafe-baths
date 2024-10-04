@@ -10,6 +10,11 @@ function scheduleAppointmentFromScheduleTab() {
         return;
     }
 
+    console.log("Date:", date);
+    console.log("Time:", time);
+    console.log("Name:", name);
+    console.log("Telephone:", telephone);
+
     const appointmentData = { name, telephone, date, time };
 
     fetch('https://nazi.today/appointments', {
