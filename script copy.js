@@ -6,8 +6,13 @@ function openTab(evt, tabName) {
     $('.tabcontent').hide();  // Hide all tab content
     $('.tablinks').removeClass('active');  // Remove active class from all tablinks
     $('#' + tabName).show();  // Show the current tab
-    if (evt) {
-        $(evt.currentTarget).addClass('active');  // Add active class to the button that opened the tab
+    $(evt.currentTarget).addClass('active');  // Add active class to the button that opened the tab
+
+    // Show or hide week navigation buttons based on the selected tab
+    if (tabName === 'Today') {
+        $('#calendar-controls').hide();  // Hide previous/next week buttons
+    } else if (tabName === 'Calendar') {
+        $('#calendar-controls').show();  // Show previous/next week buttons
     }
 }
 
@@ -21,6 +26,7 @@ function fetchAppointments() {
             return response.json();
         })
         .then(data => {
+            console.log("Fetched appointments:", data); // Debug line
             appointments = data; // Update global appointments array
             createWeeklyCalendar(); // Recreate calendar to display weekly appointments
             createTodaySchedule();  // Create today's schedule
@@ -105,7 +111,7 @@ function createTodaySchedule() {
     });
 }
 
-// Function to open the appointment modal
+// Function to open the appointment modal (unchanged)
 function openAppointmentModal(date, time) {
     $('#appointment-modal').show();
     $('#appointment-time').empty().append(`<option>${time}</option>`);
@@ -146,7 +152,7 @@ function scheduleAppointmentFromScheduleTab() {
         const [hour, minute] = time.split(':');
         appointmentDateTime.setHours(hour, minute);
         const notificationTime30 = appointmentDateTime.getTime() - (30 * 60 * 1000); // 30 minutes before
-        const notificationTime60 = appointmentDateTime.getTime() - (60 * 60 * 1000); // 60 minutes before
+        const notificationTime60 = appointmentDateTime.getTime() - (30 * 60 * 1000); // 30 minutes before
 
         setTimeout(() => notify(data.name, data.telephone), notificationTime30 - Date.now());
         setTimeout(() => notify(data.name, data.telephone), notificationTime60 - Date.now());
@@ -172,7 +178,9 @@ function notify(name, telephone) {
     });
 }
 
-// Function to switch weeks
+
+
+
 function switchWeek(direction) {
     const weekOffset = direction === 'next' ? 7 : -7; // Move forward or backward by 7 days
     const newWeekStart = new Date(currentWeekStart);
@@ -188,3 +196,14 @@ $(document).ready(() => {
     $('#prev-week').click(() => switchWeek('prev'));
     $('#next-week').click(() => switchWeek('next'));
 });
+
+// Initialize the calendar when the document is ready
+$(document).ready(() => {
+    fetchAppointments(); // Start by fetching appointments
+    $('#prev-week').click(() => switchWeek('prev'));
+    $('#next-week').click(() => switchWeek('next'));
+    openTab(null, 'Today');  // Show "Today's Schedule" tab by default
+    $('#calendar-controls').hide();  // Ensure week controls are hidden initially
+});
+
+
