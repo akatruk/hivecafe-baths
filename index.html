@@ -28,13 +28,12 @@
     <div id="Calendar" class="tabcontent" style="display:none;">
         <div id="calendar"></div>
     </div>
-
-    <!-- Calendar controls -->
-    <div id="calendar-controls" style="display:none;">
+    <div id="calendar-controls">
         <button id="prev-week">Previous Week</button>
         <button id="next-week">Next Week</button>
     </div>
     
+    <div id="calendar"></div>    
     <!-- Schedule tab content -->
     <div id="Schedule" class="tabcontent" style="display:none;">
         <h2>Schedule an Appointment</h2>
@@ -63,6 +62,7 @@
         <button id="schedule-appointment">Schedule</button>
     </div>
 
+    <script src="script.js"></script>
     <script>
         // Automatically open Today's Schedule when the page loads
         $(document).ready(() => {
