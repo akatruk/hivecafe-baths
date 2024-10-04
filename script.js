@@ -7,6 +7,13 @@ function openTab(evt, tabName) {
     $('.tablinks').removeClass('active');  // Remove active class from all tablinks
     $('#' + tabName).show();  // Show the current tab
     $(evt.currentTarget).addClass('active');  // Add active class to the button that opened the tab
+
+    // Show or hide week navigation buttons based on the selected tab
+    if (tabName === 'Today') {
+        $('#calendar-controls').hide();  // Hide previous/next week buttons
+    } else if (tabName === 'Calendar') {
+        $('#calendar-controls').show();  // Show previous/next week buttons
+    }
 }
 
 // Function to fetch appointments from the backend
@@ -19,6 +26,7 @@ function fetchAppointments() {
             return response.json();
         })
         .then(data => {
+            console.log("Fetched appointments:", data); // Debug line
             appointments = data; // Update global appointments array
             createWeeklyCalendar(); // Recreate calendar to display weekly appointments
             createTodaySchedule();  // Create today's schedule
@@ -191,9 +199,9 @@ $(document).ready(() => {
 
 // Initialize the calendar when the document is ready
 $(document).ready(() => {
-    createWeeklyCalendar(); // Start by showing the current week
-
-    // Add event listeners for the week navigation buttons
+    fetchAppointments(); // Start by fetching appointments
     $('#prev-week').click(() => switchWeek('prev'));
     $('#next-week').click(() => switchWeek('next'));
+    openTab(null, 'Today');  // Show "Today's Schedule" tab by default
+    $('#calendar-controls').hide();  // Ensure week controls are hidden initially
 });
