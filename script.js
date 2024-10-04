@@ -5,8 +5,15 @@ let appointments = []; // Array to store scheduled appointments
 function openTab(evt, tabName) {
     $('.tabcontent').hide();  // Hide all tab content
     $('.tablinks').removeClass('active');  // Remove active class from all tablinks
-    $('#' + tabName).show();  // Show the current tab
-    $(evt.currentTarget).addClass('active');  // Add active class to the button that opened the tab
+    $('#' + tabName).show();  // Show the selected tab
+    $(evt.currentTarget).addClass('active');  // Add active class to the clicked button
+
+    // Show or hide week navigation buttons based on the selected tab
+    if (tabName === 'Today') {
+        $('#calendar-controls').hide();  // Hide previous/next week buttons
+    } else if (tabName === 'Calendar') {
+        $('#calendar-controls').show();  // Show previous/next week buttons
+    }
 }
 
 // Function to fetch appointments from the backend
