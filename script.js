@@ -1,12 +1,18 @@
 const token = '7835097683:AAE8W5EDRzbzRuCOYxwUwJlFePjF31uGFAc'; // Telegram bot token
 let appointments = []; // Array to store scheduled appointments
 
-// Function to switch between tabs
 function openTab(evt, tabName) {
     $('.tabcontent').hide();  // Hide all tab content
     $('.tablinks').removeClass('active');  // Remove active class from all tablinks
     $('#' + tabName).show();  // Show the selected tab
     $(evt.currentTarget).addClass('active');  // Add active class to the clicked button
+
+    // Show or hide week navigation buttons based on the selected tab
+    if (tabName === 'Today') {
+        $('#calendar-controls').hide();  // Hide previous/next week buttons
+    } else if (tabName === 'Calendar') {
+        $('#calendar-controls').show();  // Show previous/next week buttons
+    }
 }
 
 // Function to fetch appointments from the backend
@@ -182,8 +188,11 @@ function switchWeek(direction) {
 // Initialize the calendar when the document is ready
 $(document).ready(() => {
     createWeeklyCalendar(); // Start by showing the current week
+    openTab(null, 'Today');  // Show "Today's Schedule" tab by default
+    $('#calendar-controls').hide();  // Ensure week controls are hidden initially
 
     // Add event listeners for the week navigation buttons
     $('#prev-week').click(() => switchWeek('prev'));
     $('#next-week').click(() => switchWeek('next'));
 });
+
