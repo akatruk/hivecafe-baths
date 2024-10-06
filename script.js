@@ -114,17 +114,19 @@ function deleteAppointment(appointmentId) {
         })
         .then(response => {
             if (!response.ok) {
-                throw new Error('Network response was not ok');
+                // This happens if the server returns an error status (e.g., 404 or 500)
+                throw new Error(`Failed to delete appointment. Server responded with status: ${response.status}`);
             }
             alert('Appointment deleted successfully.');
             fetchAppointments();  // Refresh the appointments after deletion
         })
         .catch(error => {
             console.error('Error deleting appointment:', error);
-            alert('Failed to delete appointment.');
+            alert(`Failed to delete appointment: ${error.message}`);
         });
     }
 }
+
 
 // Function to create today's schedule
 function createTodaySchedule() {
