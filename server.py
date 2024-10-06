@@ -85,29 +85,22 @@ def get_appointments():
 # DELETE request to remove an appointment by ID
 @app.route('/appointments/<int:id>', methods=['DELETE'])
 def delete_appointment(id):
+    app.logger.info(f"Attempting to delete appointment with ID: {id}")
     try:
-        # Establish a new connection for the request
-        conn = get_db_connection()
-        cur = conn.cursor()
+        with get_db_connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute('DELETE FROM appointments WHERE id = %s RETURNING id;', (id,))
+                deleted_id = cur.fetchone()  # Returns None if no rows were deleted
 
-        # Execute DELETE query to remove the appointment by its ID
-        cur.execute('DELETE FROM appointments WHERE id = %s RETURNING id;', (id,))
-        deleted_id = cur.fetchone()  # Returns None if no rows were deleted
+                if not deleted_id:
+                    return jsonify({'error': f'Appointment with ID {id} not found'}), 404
 
-        if not deleted_id:
-            return jsonify({'error': f'Appointment with ID {id} not found'}), 404
+                conn.commit()
 
-        conn.commit()
-
-        # Close connection and cursor
-        cur.close()
-        conn.close()
-
-        # Return success message
         return jsonify({'message': f'Appointment with ID {id} deleted successfully'}), 200
 
     except Exception as e:
-        # Handle database errors
+        app.logger.error(f"Error deleting appointment: {str(e)}")
         return jsonify({'error': str(e)}), 500
 
 if __name__ == '__main__':
