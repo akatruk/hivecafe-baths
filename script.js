@@ -85,12 +85,17 @@ function createWeeklyCalendar(weekStartDate = new Date()) {
 
             if (appointment) {
                 const displayText = `${time} - ${appointment.name}, ${appointment.telephone}`;
+                const deleteButton = $('<button></button>').text('Delete').addClass('delete-btn');
+
+                deleteButton.click(() => deleteAppointment(appointment.id));  // Handle deletion
+
                 if (isPast) {
                     timeSlot.addClass('booked').text(displayText).css('text-decoration', 'line-through');
                 } else {
                     timeSlot.addClass('booked').text(displayText);
                     timeSlot.click(() => openAppointmentModal(date, time)); // Allow clicking for future appointments
                 }
+                timeSlot.append(deleteButton);  // Append delete button to the time slot
             } else {
                 timeSlot.click(() => openAppointmentModal(date, time));
             }
@@ -99,6 +104,25 @@ function createWeeklyCalendar(weekStartDate = new Date()) {
         }
 
         $('#calendar').append(dayDiv);
+    }
+}
+
+function deleteAppointment(appointmentId) {
+    if (confirm('Are you sure you want to delete this appointment?')) {
+        fetch(`https://nazi.today/appointments/${appointmentId}`, {
+            method: 'DELETE'
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            alert('Appointment deleted successfully.');
+            fetchAppointments();  // Refresh the appointments after deletion
+        })
+        .catch(error => {
+            console.error('Error deleting appointment:', error);
+            alert('Failed to delete appointment.');
+        });
     }
 }
 
