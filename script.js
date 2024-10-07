@@ -85,16 +85,22 @@ function createWeeklyCalendar(weekStartDate = new Date()) {
 
             if (appointment) {
                 const displayText = `${time} - ${appointment.name}, ${appointment.telephone}`;
-                const deleteButton = $('<button></button>').text('Delete').addClass('delete-btn');
-                deleteButton.click(() => {
-                    console.log("Attempting to delete appointment with ID:", appointment.id);  // Log the ID here
-                    if (appointment.id) {
-                        deleteAppointment(appointment.id);
-                    } else {
-                        console.error("Invalid appointment ID:", appointment);  // Log if the ID is missing
-                    }
-                });
-                
+                const deleteButton = $('<button></button>')
+                .text('Delete')
+                .addClass('delete-btn')
+                .data('appointment-id', appointment.id);  // Store the appointment ID in the button's data
+            
+            // Use the data attribute to delete the correct appointment
+            deleteButton.click(function() {
+                const appointmentId = $(this).data('appointment-id');
+                if (appointmentId) {
+                    console.log("Deleting appointment with ID:", appointmentId);
+                    deleteAppointment(appointmentId);
+                } else {
+                    console.error("Error: Appointment ID is undefined.");
+                }
+            });
+                            
             dayDiv.append(timeSlot);
         }
 
