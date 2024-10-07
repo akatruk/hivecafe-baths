@@ -83,9 +83,10 @@ def get_appointments():
         return jsonify({'error': str(e)}), 500
 
 # DELETE request to remove an appointment by ID
+# DELETE request to remove an appointment by ID
 @app.route('/appointments/<int:id>', methods=['DELETE'])
 def delete_appointment(id):
-    app.logger.info(f"Attempting to delete appointment with ID: {id}")
+    app.logger.info(f"Attempting to delete appointment with ID: {id}")  # This is the right place
     try:
         with get_db_connection() as conn:
             with conn.cursor() as cur:
