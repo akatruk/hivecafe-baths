@@ -88,7 +88,7 @@ function createWeeklyCalendar(weekStartDate = new Date()) {
                 const deleteButton = $('<button></button>').text('Delete').addClass('delete-btn');
 
                 deleteButton.click(() => deleteAppointment(appointment.id));  // Handle deletion
-
+                
                 if (isPast) {
                     timeSlot.addClass('booked').text(displayText).css('text-decoration', 'line-through');
                 } else {
@@ -108,13 +108,19 @@ function createWeeklyCalendar(weekStartDate = new Date()) {
 }
 
 function deleteAppointment(appointmentId) {
+    console.log('Attempting to delete appointment with ID:', appointmentId);  // Add this for debugging
+
+    if (!appointmentId) {
+        alert('Appointment ID is undefined. Cannot delete.');
+        return;  // Stop the function if appointmentId is undefined
+    }
+
     if (confirm('Are you sure you want to delete this appointment?')) {
         fetch(`https://nazi.today/appointments/${appointmentId}`, {
             method: 'DELETE'
         })
         .then(response => {
             if (!response.ok) {
-                // This happens if the server returns an error status (e.g., 404 or 500)
                 throw new Error(`Failed to delete appointment. Server responded with status: ${response.status}`);
             }
             alert('Appointment deleted successfully.');
