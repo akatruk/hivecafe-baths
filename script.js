@@ -87,22 +87,7 @@ function createWeeklyCalendar(weekStartDate = new Date()) {
                 const displayText = `${time} - ${appointment.name}, ${appointment.telephone}`;
                 const deleteButton = $('<button></button>').text('Delete').addClass('delete-btn');
 
-                // Check if the ID exists before setting it
-                if (appointment.id) {
-                    console.log("Appointment ID for deletion:", appointment.id); // Log the ID
-                    deleteButton.data('appointment-id', appointment.id); // Ensure ID is correctly set
-                } else {
-                    console.error("Appointment ID is undefined for:", appointment); // Log if ID is undefined
-                }
-
-                deleteButton.click(() => {
-                    const appointmentId = deleteButton.data('appointment-id'); // Capture the appointment ID
-                    if (appointmentId) {
-                        deleteAppointment(appointmentId); // Pass the ID to the delete function
-                    } else {
-                        console.error("No appointment ID found for deletion."); // Log if ID is undefined
-                    }
-                });
+                deleteButton.click(() => deleteAppointment(appointment.id));  // Handle deletion
 
                 if (isPast) {
                     timeSlot.addClass('booked').text(displayText).css('text-decoration', 'line-through');
@@ -110,7 +95,7 @@ function createWeeklyCalendar(weekStartDate = new Date()) {
                     timeSlot.addClass('booked').text(displayText);
                     timeSlot.click(() => openAppointmentModal(date, time)); // Allow clicking for future appointments
                 }
-                timeSlot.append(deleteButton); // Append delete button to the time slot
+                timeSlot.append(deleteButton);  // Append delete button to the time slot
             } else {
                 timeSlot.click(() => openAppointmentModal(date, time));
             }
@@ -239,16 +224,17 @@ function notify(name, telephone) {
     }).done(() => {
         alert(`Notification sent to Telegram: ${message}`);
     }).fail(() => {
-        alert("Failed to send notification.");
+        alert('Failed to send notification to Telegram.');
     });
 }
 
-// Event listeners for calendar navigation
-$('#prev-week').click(() => switchWeek('prev'));
-$('#next-week').click(() => switchWeek('next'));
-
-// Initial fetch of appointments
 $(document).ready(() => {
-    fetchAppointments(); // Fetch appointments when the document is ready
-    openTab(null, 'Today'); // Open today's tab by default
+    fetchAppointments(); // Start by fetching appointments
+    $('#prev-week').click(() => switchWeek('prev'));
+    $('#next-week').click(() => switchWeek('next'));
+    
+    // Instead of passing null, directly handle the tab switching
+    openTab(null, 'Today');  // Show "Today's Schedule" tab by default
+    $('#calendar-controls').hide();  // Ensure week controls are hidden initially
+    $(document).on('click', '#schedule-appointment', scheduleAppointmentFromScheduleTab);
 });
