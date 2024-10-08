@@ -87,7 +87,17 @@ function createWeeklyCalendar(weekStartDate = new Date()) {
                 const displayText = `${time} - ${appointment.name}, ${appointment.telephone}`;
                 const deleteButton = $('<button></button>').text('Delete').addClass('delete-btn');
 
-                deleteButton.click(() => deleteAppointment(appointment.id));  // Handle deletion
+                // Attach the appointment ID to the delete button
+                deleteButton.data('appointment-id', appointment.id); // Ensure ID is correctly set
+
+                deleteButton.click(() => {
+                    const appointmentId = deleteButton.data('appointment-id'); // Capture the appointment ID
+                    if (appointmentId) {
+                        deleteAppointment(appointmentId); // Pass the ID to the delete function
+                    } else {
+                        console.error("No appointment ID found for deletion."); // Log if ID is undefined
+                    }
+                });
 
                 if (isPast) {
                     timeSlot.addClass('booked').text(displayText).css('text-decoration', 'line-through');
@@ -95,7 +105,7 @@ function createWeeklyCalendar(weekStartDate = new Date()) {
                     timeSlot.addClass('booked').text(displayText);
                     timeSlot.click(() => openAppointmentModal(date, time)); // Allow clicking for future appointments
                 }
-                timeSlot.append(deleteButton);  // Append delete button to the time slot
+                timeSlot.append(deleteButton); // Append delete button to the time slot
             } else {
                 timeSlot.click(() => openAppointmentModal(date, time));
             }
@@ -109,12 +119,12 @@ function createWeeklyCalendar(weekStartDate = new Date()) {
 
 function deleteAppointment(appointmentId) {
     if (!appointmentId) {
-        console.error("No appointment ID found for deletion.");
+        console.error("No appointment ID found for deletion."); // Error handling
         alert("Error: No appointment ID available.");
         return; // Stop execution if no ID is available
     }
 
-    console.log("Deleting appointment with ID:", appointmentId);  // Add this log
+    console.log("Deleting appointment with ID:", appointmentId); // Log the ID to confirm it's being passed
     
     if (confirm('Are you sure you want to delete this appointment?')) {
         fetch(`https://nazi.today/appointments/${appointmentId}`, {
@@ -125,7 +135,7 @@ function deleteAppointment(appointmentId) {
                 throw new Error(`Failed to delete appointment. Server responded with status: ${response.status}`);
             }
             alert('Appointment deleted successfully.');
-            fetchAppointments();  // Refresh the appointments after deletion
+            fetchAppointments(); // Refresh the appointments after deletion
         })
         .catch(error => {
             console.error('Error deleting appointment:', error);
@@ -224,17 +234,16 @@ function notify(name, telephone) {
     }).done(() => {
         alert(`Notification sent to Telegram: ${message}`);
     }).fail(() => {
-        alert('Failed to send notification to Telegram.');
+        alert("Failed to send notification.");
     });
 }
 
+// Event listeners for calendar navigation
+$('#prev-week').click(() => switchWeek('prev'));
+$('#next-week').click(() => switchWeek('next'));
+
+// Initial fetch of appointments
 $(document).ready(() => {
-    fetchAppointments(); // Start by fetching appointments
-    $('#prev-week').click(() => switchWeek('prev'));
-    $('#next-week').click(() => switchWeek('next'));
-    
-    // Instead of passing null, directly handle the tab switching
-    openTab(null, 'Today');  // Show "Today's Schedule" tab by default
-    $('#calendar-controls').hide();  // Ensure week controls are hidden initially
-    $(document).on('click', '#schedule-appointment', scheduleAppointmentFromScheduleTab);
+    fetchAppointments(); // Fetch appointments when the document is ready
+    openTab(null, 'Today'); // Open today's tab by default
 });
