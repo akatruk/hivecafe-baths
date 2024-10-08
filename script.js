@@ -87,8 +87,13 @@ function createWeeklyCalendar(weekStartDate = new Date()) {
                 const displayText = `${time} - ${appointment.name}, ${appointment.telephone}`;
                 const deleteButton = $('<button></button>').text('Delete').addClass('delete-btn');
 
-                // Attach the appointment ID to the delete button
-                deleteButton.data('appointment-id', appointment.id); // Ensure ID is correctly set
+                // Check if the ID exists before setting it
+                if (appointment.id) {
+                    console.log("Appointment ID for deletion:", appointment.id); // Log the ID
+                    deleteButton.data('appointment-id', appointment.id); // Ensure ID is correctly set
+                } else {
+                    console.error("Appointment ID is undefined for:", appointment); // Log if ID is undefined
+                }
 
                 deleteButton.click(() => {
                     const appointmentId = deleteButton.data('appointment-id'); // Capture the appointment ID
