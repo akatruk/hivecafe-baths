@@ -108,13 +108,18 @@ function createWeeklyCalendar(weekStartDate = new Date()) {
 }
 
 function deleteAppointment(appointmentId) {
+    if (!appointmentId) {
+        console.error("No appointment ID found for deletion.");
+        alert("Error: No appointment ID available.");
+        return; // Prevent further execution if no ID
+    }
+    
     if (confirm('Are you sure you want to delete this appointment?')) {
         fetch(`https://nazi.today/appointments/${appointmentId}`, {
             method: 'DELETE'
         })
         .then(response => {
             if (!response.ok) {
-                // This happens if the server returns an error status (e.g., 404 or 500)
                 throw new Error(`Failed to delete appointment. Server responded with status: ${response.status}`);
             }
             alert('Appointment deleted successfully.');
@@ -126,7 +131,6 @@ function deleteAppointment(appointmentId) {
         });
     }
 }
-
 
 // Function to create today's schedule
 function createTodaySchedule() {
