@@ -111,8 +111,10 @@ function deleteAppointment(appointmentId) {
     if (!appointmentId) {
         console.error("No appointment ID found for deletion.");
         alert("Error: No appointment ID available.");
-        return; // Prevent further execution if no ID
+        return; // Stop execution if no ID is available
     }
+
+    console.log("Deleting appointment with ID:", appointmentId);  // Add this log
     
     if (confirm('Are you sure you want to delete this appointment?')) {
         fetch(`https://nazi.today/appointments/${appointmentId}`, {
