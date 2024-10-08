@@ -87,7 +87,23 @@ function createWeeklyCalendar(weekStartDate = new Date()) {
                 const displayText = `${time} - ${appointment.name}, ${appointment.telephone}`;
                 const deleteButton = $('<button></button>').text('Delete').addClass('delete-btn');
 
-                deleteButton.click(() => deleteAppointment(appointment.id));  // Handle deletion
+                // Check if the appointment has an ID and log it
+                if (appointment.id) {
+                    console.log("Appointment ID for deletion:", appointment.id); // Debugging log
+                    deleteButton.data('appointment-id', appointment.id); // Attach ID to delete button
+                } else {
+                    console.error("No ID found for appointment:", appointment); // Log error
+                }
+
+                // Handle delete button click
+                deleteButton.click(() => {
+                    const appointmentId = deleteButton.data('appointment-id');
+                    if (appointmentId) {
+                        deleteAppointment(appointmentId); // Pass appointment ID to delete function
+                    } else {
+                        console.error("No appointment ID found for deletion.");
+                    }
+                });
 
                 if (isPast) {
                     timeSlot.addClass('booked').text(displayText).css('text-decoration', 'line-through');
@@ -95,7 +111,7 @@ function createWeeklyCalendar(weekStartDate = new Date()) {
                     timeSlot.addClass('booked').text(displayText);
                     timeSlot.click(() => openAppointmentModal(date, time)); // Allow clicking for future appointments
                 }
-                timeSlot.append(deleteButton);  // Append delete button to the time slot
+                timeSlot.append(deleteButton); // Append delete button to the time slot
             } else {
                 timeSlot.click(() => openAppointmentModal(date, time));
             }
